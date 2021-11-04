@@ -42,7 +42,7 @@ namespace RecorderApp.ViewModels
             this.ChooseDestPath = new RelayCommand(this.ChooseFolder);
 
             this.SelectScenesCommand = new RelayCommand(this.SelectScenes);
-
+            this.SubmitRateCommand = new RelayCommand(this.SaveRating);
             this.SaveHeatmapCommand = new RelayCommand(this.SaveHeatmap);
             //this.SelectScenesCommand = new RelayCommand(this.StartProcess);
             //this.SelectScenesCommand = new RelayCommand(this.StartProcess);
@@ -107,6 +107,26 @@ namespace RecorderApp.ViewModels
         }
 
         #endregion
+
+        #region Binding for Rating
+
+        public ICommand SubmitRateCommand { get; set; }
+
+        void SaveRating()
+        {
+
+            ObservableCollection<VideoClip> UserClipData = new ObservableCollection<VideoClip>();
+
+            foreach (VideoClip clip in ClipData)
+            {
+                Console.WriteLine(clip.fileName + " " + clip.rating);
+            }
+
+        }
+
+
+        #endregion
+
 
         #region check if clips are loaded to set visibility
 
@@ -296,6 +316,7 @@ namespace RecorderApp.ViewModels
 
             //announce loading of clips successfully
             //_ea.GetEvent<LoadedClipsEvent>().Publish(true);
+            LoadImgOptions();
             clipsDoneLoading(true);
         }
 

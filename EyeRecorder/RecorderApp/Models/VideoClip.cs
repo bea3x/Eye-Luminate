@@ -14,13 +14,14 @@ namespace RecorderApp.Models
 
         }
 
-        public VideoClip(string _fileName, string _filePath, int _duration, int _rank, string _imgPath)
+        public VideoClip(string _fileName, string _filePath, int _duration, int _rank, string _imgPath, int _rating)
         {
             fileName = _fileName;
             filePath = _filePath;
             duration = _duration;
             rank = _rank;
             imgPath = _imgPath;
+            rating = _rating;
         }
 
 
@@ -38,5 +39,8 @@ namespace RecorderApp.Models
 
         [Index(4)]
         public string imgPath { get; set; }
+
+        [Index(5)]
+        public int rating { get; set; }
     }
 }

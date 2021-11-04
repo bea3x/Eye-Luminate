@@ -95,6 +95,7 @@
     <Compile Include="Utility\ListboxWatchEvent.cs" />
     <Compile Include="Utility\LoadedClipsEvent.cs" />
     <Compile Include="Utility\MediaWatchEvent.cs" />
+    <Compile Include="Utility\RatingConverter.cs" />
     <Compile Include="Utility\RecStatusEvent.cs" />
     <Compile Include="Utility\SavePathEvent.cs" />
     <Compile Include="Utility\StringToURI.cs" />

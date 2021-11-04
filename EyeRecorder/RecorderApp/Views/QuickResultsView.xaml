@@ -3,7 +3,8 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:prism="http://prismlibrary.com/"  
              xmlns:utilities="clr-namespace:RecorderApp.Utility"
-             prism:ViewModelLocator.AutoWireViewModel="True"
+             xmlns:c="clr-namespace:RecorderApp" xmlns:c1="clr-namespace:RecorderApp.Models"
+        prism:ViewModelLocator.AutoWireViewModel="True"
             Title="Quick Results Mode" Height="720" Width="1280" 
         ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.CanContentScroll="True" WindowStartupLocation="CenterScreen">
 
@@ -11,7 +12,9 @@
         <utilities:FilenameConverter x:Key="FilenameConverter" />
         <utilities:VisibilityConverter x:Key="VisibilityConverter"/>
         <utilities:StringToURI x:Key="StringToURI"/>
+        <utilities:RatingConverter x:Key="RatingConverter"/>
         <Style x:Key="radioStyle" TargetType="{x:Type RadioButton}" BasedOn="{StaticResource {x:Type ToggleButton}}" />
+        <c1:ImageBtns x:Key="ImageBtns"/>
     </Window.Resources>
     <ScrollViewer>
     <Grid>
@@ -109,7 +112,7 @@
                 </Button.Resources>
                 Back to Main Menu
             </Button>
-            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
                     <Label Visibility="{Binding AreClipsLoaded, Converter={StaticResource VisibilityConverter}}"
                            FontFamily="Segoe UI Semibold" Foreground="White">
                         Rate each scene
@@ -117,7 +120,7 @@
                     <ItemsControl x:Name="lbClips" ItemsSource="{Binding ClipData}" Grid.IsSharedSizeScope="True">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
-                                <StackPanel Orientation="Horizontal" />
+                                <StackPanel Orientation="Horizontal" MaxWidth="1600" CanHorizontallyScroll="True"/>
                             </ItemsPanelTemplate>
                         </ItemsControl.ItemsPanel>
                         <ItemsControl.ItemTemplate>
@@ -131,24 +134,31 @@
                                               MouseEnter="clipEl_MouseEnter" MouseLeave="clipEl_MouseLeave" 
                                               LoadedBehavior="Manual" Loaded="clipEl_Loaded" ScrubbingEnabled="True" 
                                               MediaEnded="clipEl_MediaEnded" />
-                                    <StackPanel Orientation="Horizontal" Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center">
-
-                                        <RadioButton GroupName="{Binding ElementName=clipEl, Path=Source}" Style="{StaticResource radioStyle}" Height="50" Width="50" >
+                                    <ListBox x:Name="lisBboxItems" SelectedIndex="{Binding rating, Mode=OneWayToSource}" Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center" SelectionChanged="ListBox_SelectionChanged">
+                                        <ListBox.ItemsPanel>
+                                            <ItemsPanelTemplate>
+                                                <StackPanel Orientation="Horizontal"/>
+                                            </ItemsPanelTemplate>
+                                        </ListBox.ItemsPanel>
+                                        <RadioButton GroupName="{Binding ElementName=clipEl, Path=Source}" Style="{StaticResource radioStyle}" Height="50" Width="50"
+                                                     IsChecked="{Binding rating, Converter={StaticResource RatingConverter}, ConverterParameter=1}">
                                             <Image Source="/RecorderApp;component/Assets/happy.png"/>
                                         </RadioButton>
-                                        <RadioButton GroupName="{Binding ElementName=clipEl, Path=Source}" Style="{StaticResource radioStyle}" Height="50" Width="50">
+                                        <RadioButton GroupName="{Binding ElementName=clipEl, Path=Source}" Style="{StaticResource radioStyle}" Height="50" Width="50"
+                                                     IsChecked="{Binding rating, Converter={StaticResource RatingConverter}, ConverterParameter=2}">
                                             <Image Source="/RecorderApp;component/Assets/neutral.png"/>
                                         </RadioButton>
-                                        <RadioButton GroupName="{Binding ElementName=clipEl, Path=Source}" Style="{StaticResource radioStyle}" Height="50" Width="50">
+                                        <RadioButton GroupName="{Binding ElementName=clipEl, Path=Source}" Style="{StaticResource radioStyle}" Height="50" Width="50"
+                                                     IsChecked="{Binding rating, Converter={StaticResource RatingConverter}, ConverterParameter=3}">
                                             <Image Source="/RecorderApp;component/Assets/sad.png"/>
                                         </RadioButton>
-                                    </StackPanel>
+                                    </ListBox>
                                 </Grid>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
 
-                    <Button Visibility="{Binding AreClipsLoaded, Converter={StaticResource VisibilityConverter}}">Submit Ratings</Button>
+                    <Button Command="{Binding SubmitRateCommand}" Visibility="{Binding AreClipsLoaded, Converter={StaticResource VisibilityConverter}}">Submit Ratings</Button>
 
                     <Label Visibility="{Binding AreClipsLoaded, Converter={StaticResource VisibilityConverter}}"
                            FontFamily="Segoe UI Semibold" Foreground="White">
@@ -158,14 +168,14 @@
                               Loaded="PreviewClip_Loaded" LoadedBehavior="Manual" ScrubbingEnabled="True" MediaEnded="PreviewClip_MediaEnded"
                               MouseLeftButtonDown="PreviewClip_MouseLeftButtonDown" MouseEnter="PreviewClip_MouseEnter" MouseLeave="PreviewClip_MouseLeave" />
 
-                <Button x:Name="btn_hm" Command="{Binding SaveHeatmapCommand}" 
+                    <Button x:Name="btn_hm" Command="{Binding SaveHeatmapCommand}" 
                         Margin="0,50" Width="150" Background="#FF72C480" FontFamily="Segoe UI Semibold" Foreground="White"
                         Visibility="{Binding AreClipsLoaded, Converter={StaticResource VisibilityConverter}}">Generate Heatmap</Button>
 
 
+                </StackPanel>
+
             </StackPanel>
-            
-        </StackPanel>
         
     </Grid>
     </ScrollViewer>
