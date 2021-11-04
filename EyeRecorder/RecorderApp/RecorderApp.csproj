@@ -87,7 +87,6 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Models\Fixation.cs" />
-    <Compile Include="Models\ImageBtns.cs" />
     <Compile Include="Models\RawGaze.cs" />
     <Compile Include="Models\VideoClip.cs" />
     <Compile Include="Utility\CalibrationEvent.cs" />

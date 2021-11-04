@@ -81,32 +81,6 @@ namespace RecorderApp.ViewModels
             Console.WriteLine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location));
         }
 
-        #region Image collection
-
-        private ObservableCollection<ImageBtns> imageOptions = new ObservableCollection<ImageBtns>();
-
-        public ObservableCollection<ImageBtns> ImageOptions
-        {
-            get { return imageOptions; }
-            set 
-            {
-                SetProperty(ref imageOptions, value); 
-            }
-        }
-
-        private void LoadImgOptions()
-        {
-            ImageBtns img1, img2, img3;
-
-            img1 = new ImageBtns(@"D:\tobii\thess\EyeGazeTracker\EyeRecorder\RecorderApp\Assets\happy.png", "Positive");
-            ImageOptions.Add(img1);
-            img2 = new ImageBtns(@"D:\tobii\thess\EyeGazeTracker\EyeRecorder\RecorderApp\Assets\neutral.png", "Neutral");
-            ImageOptions.Add(img2);
-            img3 = new ImageBtns(@"D:\tobii\thess\EyeGazeTracker\EyeRecorder\RecorderApp\Assets\sad.png", "Negative");
-            ImageOptions.Add(img3);
-        }
-
-        #endregion
 
         #region Binding for Rating
 
@@ -115,13 +89,33 @@ namespace RecorderApp.ViewModels
         void SaveRating()
         {
 
-            ObservableCollection<VideoClip> UserClipData = new ObservableCollection<VideoClip>();
+            List<VideoClip> UserClipData = new List<VideoClip>();
 
             foreach (VideoClip clip in ClipData)
             {
-                Console.WriteLine(clip.fileName + " " + clip.rating);
-            }
+                
+                Console.WriteLine(clip.fileName + " " + clip.rating + " " + getRateValue(clip.rating));
+                clip.rateValue = getRateValue(clip.rating);
+                UserClipData.Add(clip);
 
+            }
+            string newFile = writeFile(UserClipData, "userClipData");
+            Console.WriteLine(newFile + " created!");
+        }
+
+        string getRateValue(int rateIndex)
+        {
+            switch (rateIndex)
+            {
+                case 1:
+                    return "Positive";
+                case 2:
+                    return "Neutral";
+                case 3:
+                    return "Negative";
+                default:
+                    return "";
+            }
         }
 
 
@@ -316,7 +310,7 @@ namespace RecorderApp.ViewModels
 
             //announce loading of clips successfully
             //_ea.GetEvent<LoadedClipsEvent>().Publish(true);
-            LoadImgOptions();
+
             clipsDoneLoading(true);
         }
 

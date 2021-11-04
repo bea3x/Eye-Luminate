@@ -14,7 +14,6 @@
         <utilities:StringToURI x:Key="StringToURI"/>
         <utilities:RatingConverter x:Key="RatingConverter"/>
         <Style x:Key="radioStyle" TargetType="{x:Type RadioButton}" BasedOn="{StaticResource {x:Type ToggleButton}}" />
-        <c1:ImageBtns x:Key="ImageBtns"/>
     </Window.Resources>
     <ScrollViewer>
     <Grid>

@@ -31,13 +31,14 @@ class GazeData:
 
 class VideoClip:
         
-    def __init__(self, name, fullpath, duration, rank, imgpath, rating=0):
+    def __init__(self, name, fullpath, duration, rank, imgpath, rating=0, rateValue=""):
         self.name = name
         self.fullpath = fullpath
         self.duration = duration
         self.rank = rank
         self.imgpath = imgpath
         self.rating = rating
+        self.rateValue = rateValue
 
 
 # * read data from finalGazeData
@@ -161,13 +162,13 @@ def writeClipDetails(filename, data):
     print("Making file '", filename, "'...")
 
     with open(filename, mode='w', newline='') as clipDetails:
-        header = ['File Name', 'File Path', 'Duration', 'Rank', 'Image Path', 'Rating']
+        header = ['File Name', 'File Path', 'Duration', 'Rank', 'Image Path', 'Rating', 'Rating Value']
         writer = csv.DictWriter(clipDetails, fieldnames=header)
 
         writer.writeheader()
         for x in data: 
             writer.writerow({'File Name': x.name, 'File Path': str(x.fullpath), 'Duration': str(x.duration), 
-            'Rank': str(x.rank), 'Image Path': str(x.imgpath), 'Rating': str(x.rating)})   
+            'Rank': str(x.rank), 'Image Path': str(x.imgpath), 'Rating': str(x.rating), 'Rating Value': str(x.rateValue)})   
             
     print("Created file '", filename, "'...")
 

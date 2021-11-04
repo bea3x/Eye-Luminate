@@ -158,10 +158,6 @@ namespace RecorderApp.Views
             clip.Pause();
         }
 
-        private void ListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            Console.WriteLine("oo, selection changed bobo. now fix it!!");
-        }
     }
 
 
