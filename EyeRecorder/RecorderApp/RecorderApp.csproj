@@ -86,11 +86,16 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Dialogs\MessageDialog.xaml.cs">
+      <DependentUpon>MessageDialog.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Dialogs\MessageDialogViewModel.cs" />
     <Compile Include="Models\Fixation.cs" />
     <Compile Include="Models\RawGaze.cs" />
     <Compile Include="Models\VideoClip.cs" />
     <Compile Include="Utility\CalibrationEvent.cs" />
     <Compile Include="Utility\FilenameConverter.cs" />
+    <Compile Include="Utility\IMessageService.cs" />
     <Compile Include="Utility\ListboxWatchEvent.cs" />
     <Compile Include="Utility\LoadedClipsEvent.cs" />
     <Compile Include="Utility\MediaWatchEvent.cs" />
@@ -100,6 +105,7 @@
     <Compile Include="Utility\StringToURI.cs" />
     <Compile Include="Utility\TimeWatchEvent.cs" />
     <Compile Include="Utility\VisibilityConverter.cs" />
+    <Compile Include="ViewModels\CalibrationViewViewModel.cs" />
     <Compile Include="ViewModels\CleanDataViewModel.cs" />
     <Compile Include="ViewModels\DynamicGridViewModel.cs" />
     <Compile Include="ViewModels\IVTViewModel.cs" />
@@ -111,6 +117,10 @@
     <Compile Include="Views\ResultsView.xaml.cs">
       <DependentUpon>ResultsView.xaml</DependentUpon>
     </Compile>
+    <Page Include="Dialogs\MessageDialog.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Views\GazeTrackerView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -175,6 +185,9 @@
     <PackageReference Include="CsvHelper">
       <Version>27.1.1</Version>
     </PackageReference>
+    <PackageReference Include="FontAwesome.WPF">
+      <Version>4.7.0.9</Version>
+    </PackageReference>
     <PackageReference Include="NReco.VideoConverter">
       <Version>1.1.4</Version>
     </PackageReference>
@@ -201,6 +214,9 @@
     <Resource Include="Assets\happy.png" />
     <Resource Include="Assets\neutral.png" />
     <Resource Include="Assets\sad.png" />
+    <Resource Include="Assets\mainBG.png" />
+    <Resource Include="Assets\qResBG.png" />
+    <Resource Include="Assets\resBG.png" />
     <Content Include="Scripts\extractFrames.py" />
     <Content Include="Scripts\extractScenes.py" />
     <Content Include="Scripts\getHeatmap.py" />

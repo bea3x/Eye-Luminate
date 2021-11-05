@@ -91,7 +91,7 @@ namespace RecorderApp.ViewModels
 
         public void startTracking()
         {
-            
+
             // uncomment to initiate calibration
             //_eyeXHost.LaunchGuestCalibration();
 
@@ -121,7 +121,7 @@ namespace RecorderApp.ViewModels
             Console.WriteLine(exeRuntimeDirectory);
             Console.WriteLine(outputFileDirectory);
 
-            
+
             //outputFileName = "gazeTrackerOutput";
             // write headers on csv file
             System.IO.File.WriteAllText(outputFileDirectory + @"\" + outputFileName + ".csv", "X Gaze Data, Y Gaze Data, Time \r\n");
@@ -151,7 +151,7 @@ namespace RecorderApp.ViewModels
 
         private void GetMediaStatus(bool ended)
         {
-            if(ended)
+            if (ended)
             {
                 ShowQuickResultsWindow();
             }
@@ -179,10 +179,11 @@ namespace RecorderApp.ViewModels
         public Uri VideoSource
         {
             get { return videoSource; }
-            set 
-            { 
+            set
+            {
                 videoSource = value;
                 RaisePropertyChanged("VideoSource");
+                //SetProperty(ref videoSource, value);
             }
         }
 
@@ -203,8 +204,8 @@ namespace RecorderApp.ViewModels
         public int Timespan
         {
             get { return timeSpan; }
-            set 
-            { 
+            set
+            {
                 timeSpan = value;
                 RaisePropertyChanged("Timespan");
             }
@@ -296,7 +297,7 @@ namespace RecorderApp.ViewModels
         /// </summary>
         /// <param name="text"></param>
         /// 
-        
+
         private void writeDataToFile(string text)
         {
             using (StreamWriter sw = System.IO.File.AppendText(outputFileDirectory + @"\" + outputFileName + ".csv"))
@@ -304,7 +305,7 @@ namespace RecorderApp.ViewModels
                 sw.WriteLine(text);
             }
         }
-        
+
 
         #endregion
 
@@ -327,12 +328,12 @@ namespace RecorderApp.ViewModels
 
         public bool IsUserPresent
         {
-            get 
-            { 
-                return _isUserPresent; 
+            get
+            {
+                return _isUserPresent;
             }
-            set 
-            { 
+            set
+            {
                 _isUserPresent = value;
                 RaisePropertyChanged("IsUserPresent");
             }
@@ -346,11 +347,11 @@ namespace RecorderApp.ViewModels
 
         public bool IsTrackingGaze
         {
-            get 
-            { 
-                return _isTrackingGaze; 
+            get
+            {
+                return _isTrackingGaze;
             }
-            set 
+            set
             {
                 _isTrackingGaze = value;
                 //SetProperty(ref _isTrackingGaze, value);
@@ -362,11 +363,11 @@ namespace RecorderApp.ViewModels
 
         public bool IsTrackingGazeSupported
         {
-            get 
-            { 
-                return _isTrackingGazeSupported; 
+            get
+            {
+                return _isTrackingGazeSupported;
             }
-            set 
+            set
             {
                 _isTrackingGazeSupported = value;
                 RaisePropertyChanged("IsTrackingGazeSupported");

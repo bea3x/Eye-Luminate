@@ -3,6 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:prism="http://prismlibrary.com/"  
              xmlns:utilities="clr-namespace:RecorderApp.Utility"
+             xmlns:fa="http://schemas.fontawesome.io/icons/"
              xmlns:c="clr-namespace:RecorderApp" xmlns:c1="clr-namespace:RecorderApp.Models"
         prism:ViewModelLocator.AutoWireViewModel="True"
             Title="Quick Results Mode" Height="720" Width="1280" 
@@ -16,110 +17,141 @@
         <Style x:Key="radioStyle" TargetType="{x:Type RadioButton}" BasedOn="{StaticResource {x:Type ToggleButton}}" />
     </Window.Resources>
     <ScrollViewer>
-    <Grid>
-        <!--<Rectangle Width="5" Fill="#72c480
+        <Grid>
+            <!--<Rectangle Width="5" Fill="#72c480
                        " HorizontalAlignment="Left"/>-->
-        <StackPanel CanVerticallyScroll="False" Background="#FF222629">
+            <StackPanel CanVerticallyScroll="False">
 
-            <StackPanel.Resources>
-                <Style TargetType="{x:Type Button}">
-                    <Setter Property="Margin" Value="0,10,0,0"/>
-                    <Setter Property="Width" Value="250"/>
-                    <Setter Property="Height" Value="30"/>
-                    <Setter Property="Background" Value="#E0E3EB"/>
-                    <Setter Property="BorderBrush" Value="#E0E3EB"/>
-                </Style>
-                <Style TargetType="{x:Type Label}">
-                    <Setter Property="Margin" Value="0,25,0,5"/>
-                    <Setter Property="Width" Value="400"/>
-                </Style>
-                <Style TargetType="{x:Type Rectangle}">
-                    <Setter Property="Fill" Value="Gray"/>
-                    <Setter Property="Width" Value="450"/>
-                    <Setter Property="Height" Value="1"/>
-                </Style>
-            </StackPanel.Resources>
-            <Label Content="Scene Selection" FontFamily="Yu Gothic UI" Foreground="White"/>
-            <Rectangle/>
-            <!-- 
+                <StackPanel.Resources>
+                    <Style TargetType="{x:Type Button}">
+                        <Setter Property="Margin" Value="0,10,0,0"/>
+                        <Setter Property="Width" Value="250"/>
+                        <Setter Property="Height" Value="30"/>
+                        <Setter Property="Background" Value="#E0E3EB"/>
+                        <Setter Property="BorderBrush" Value="#E0E3EB"/>
+                    </Style>
+                    <Style TargetType="{x:Type Label}">
+                        <Setter Property="Margin" Value="0,25,0,5"/>
+                        <Setter Property="Width" Value="400"/>
+                    </Style>
+                    <Style TargetType="{x:Type Rectangle}">
+                        <Setter Property="Fill" Value="Gray"/>
+                        <Setter Property="Width" Value="450"/>
+                        <Setter Property="Height" Value="1"/>
+                    </Style>
+                </StackPanel.Resources>
+                <StackPanel.Background>
+                    <ImageBrush ImageSource="/Assets/qResBG.png"/>
+                </StackPanel.Background>
+                <Label Content="Scene Selection" FontFamily="Yu Gothic UI" Foreground="White"/>
+                <Rectangle/>
+                <!-- 
                 <TextBlock x:Name="txtSelectedFile" Width="450" >
                     <Run Text="{Binding SelectedFile}" FontStyle="Italic" FontSize="9"/>
                 </TextBlock>
                 <Button x:Name="btn_Data" Command="{Binding OpenCommand}">Choose CSV File</Button>
                 -->
-            
-            <TextBlock x:Name="txtSelectedFile" Width="450" Foreground="White" >
-                    <Run Text="{Binding ElementName=lbFiles, Path=SelectedItem.FullName, Mode=OneWay}" FontStyle="Italic" FontSize="9"/>
-            </TextBlock>
-            <ListBox x:Name="lbFiles" ItemsSource="{Binding FileList}" MinHeight="45" Width="300" Margin="0,20,0,0" 
-                             SelectedItem="{Binding SelectedCSV}" HorizontalAlignment="Center" VerticalAlignment="Center" Background="#FF222629" BorderBrush="#FF222629" Foreground="White">
-                <ListBox.ItemTemplate>
-                    <DataTemplate>
-                        <StackPanel>
-                            <TextBlock Text="{Binding Name, Converter={StaticResource FilenameConverter}}"/>
-                        </StackPanel>
-                    </DataTemplate>
-                </ListBox.ItemTemplate>
-            </ListBox>
 
-            <TextBlock x:Name="txtSelectedVid" Width="450" Foreground="White" FontFamily="Segoe UI Semibold" >
+                <TextBlock x:Name="txtSelectedFile" Width="450" Foreground="White" FontFamily="Segoe UI Semilight">
+                    <Run Text="{Binding ElementName=lbFiles, Path=SelectedItem.FullName, Mode=OneWay}" FontStyle="Italic" FontSize="9"/>
+                </TextBlock>
+                <ListBox x:Name="lbFiles" ItemsSource="{Binding FileList}" MinHeight="45" Width="300" Margin="0,20,0,0" 
+                             SelectedItem="{Binding SelectedCSV}" HorizontalAlignment="Center" VerticalAlignment="Center" Background="#FF222629" BorderBrush="#FF222629" Foreground="White">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <StackPanel>
+                                <TextBlock Text="{Binding Name, Converter={StaticResource FilenameConverter}}"/>
+                            </StackPanel>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+
+                <TextBlock x:Name="txtSelectedVid" Width="450" Foreground="White" FontFamily="Segoe UI Semilight" >
                     <Run Text="{Binding SelectedVid}" FontStyle="Italic" FontSize="9"/>
-            </TextBlock>
-            <Button x:Name="btn_open" Command="{Binding OpenVidCommand}" Foreground="White" Background="#FFB3B3B3">
-                <Button.Resources>
-                    <Style TargetType="Border">
-                        <Setter Property="CornerRadius" Value="5"/>
-                    </Style>
-                </Button.Resources> Choose Video File
-            </Button>
-            <TextBlock x:Name="txtSelectedPath" Width="450" Foreground="White" FontFamily="Segoe UI Semibold" >
+                </TextBlock>
+                <Button x:Name="btn_open" Command="{Binding OpenVidCommand}" Foreground="White" Background="#FFB3B3B3">
+                    <Button.Resources>
+                        <Style TargetType="Border">
+                            <Setter Property="CornerRadius" Value="5"/>
+                        </Style>
+                    </Button.Resources> Choose Video File
+                </Button>
+                <TextBlock x:Name="txtSelectedPath" Width="450" Foreground="White" FontFamily="Segoe UI Semilight" >
                     <Run Text="{Binding SelectedPath}" FontStyle="Italic" FontSize="9"/>
-            </TextBlock>
-            <Button Command="{Binding ChooseDestPath}" Foreground="White" Background="#FFB3B3B3">
-                <Button.Resources>
-                    <Style TargetType="Border">
-                        <Setter Property="CornerRadius" Value="5"/>
-                    </Style>
-                </Button.Resources>
-                Choose Destination Folder
-            </Button>
-            <StackPanel Orientation="Horizontal" Width="350" Height="50">
-                <TextBlock Width="150" VerticalAlignment="Center" Foreground="White">Select how many scenes?</TextBlock>
-                <TextBox x:Name="txt_Num" Width="50" Height="20" VerticalAlignment="Center" Text="{Binding NumScenes}" Foreground="White" Background="#FF2E3337" BorderBrush="#FF2E3337" FontFamily="Segoe UI Semibold"></TextBox>
-                <Button Command="{Binding SelectScenesCommand}" Width="40" Height="20" VerticalAlignment="Center" Margin="20,0,0,0" Foreground="White" Background="#FF72C480">
+                </TextBlock>
+                <Button Command="{Binding ChooseDestPath}" Foreground="White" Background="#FFB3B3B3">
                     <Button.Resources>
                         <Style TargetType="Border">
                             <Setter Property="CornerRadius" Value="5"/>
                         </Style>
                     </Button.Resources>
-                    Go
+                    Choose Destination Folder
                 </Button>
-            </StackPanel>
+                <StackPanel Orientation="Horizontal" Width="350" Height="50">
+                    <TextBlock Width="150" VerticalAlignment="Center" Foreground="White">Select how many scenes?</TextBlock>
+                    <TextBox x:Name="txt_Num" Width="50" Height="20" VerticalAlignment="Center" Text="{Binding NumScenes}" Foreground="White" Background="#FF2E3337" BorderBrush="#FF2E3337" FontFamily="Segoe UI Semibold"></TextBox>
+                    <Button Command="{Binding SelectScenesCommand}" Width="40" Height="20" VerticalAlignment="Center" Margin="20,0,0,0" Foreground="White" Background="#FF72C480">
+                        <Button.Resources>
+                            <Style TargetType="Border">
+                                <Setter Property="CornerRadius" Value="5"/>
+                            </Style>
+                        </Button.Resources>
+                        Go
+                    </Button>
+                </StackPanel>
 
-            <ProgressBar Width="350" Height="20" Margin="0,10,0,5" Minimum="0" Maximum="100"
-                             Value="{Binding CurrentProgress}" BorderBrush="#FF222629" Background="#FF222629" Foreground="#FF72C480" ></ProgressBar>
-            <TextBlock x:Name="txtProgressOutput" Width="150" Foreground="White" FontFamily="Segoe UI Semibold" VerticalAlignment="Center" HorizontalAlignment="Center">
-                    <Run Text="{Binding Output}" FontSize="9"/>
-            </TextBlock>
 
-            <Button x:Name="btn_back" Command="{Binding BackCommand}" 
+                <fa:ImageAwesome Margin="0,30,10,0" Icon="CircleOutlineNotch" Spin="True" Height="48" Width="48" Foreground="AliceBlue" 
+                                 Visibility="{Binding IsProcessing, Converter={StaticResource VisibilityConverter}}"/>
+                <TextBlock x:Name="txtProgressOutput" Width="250" Foreground="White" FontFamily="Segoe UI Semibold" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="30,30,10,0">
+                    <Run Text="{Binding Output}" FontSize="12"/>
+                </TextBlock>
+
+                <Button x:Name="btn_back" Command="{Binding BackCommand}" 
                         Margin="0,50" Width="150" Background="#FF72C480" FontFamily="Segoe UI Semibold" Foreground="White">
-                <Button.Resources>
-                    <Style TargetType="Border">
-                        <Setter Property="CornerRadius" Value="5"/>
-                    </Style>
-                </Button.Resources>
-                Back to Main Menu
-            </Button>
+                    <Button.Resources>
+                        <Style TargetType="Border">
+                            <Setter Property="CornerRadius" Value="5"/>
+                        </Style>
+                    </Button.Resources>
+                    Back to Main Menu
+                </Button>
+
+                <!-- Preview all scenes (Merged clip) + Generate Heatmap button -->
+                <Label Visibility="{Binding AreClipsLoaded, Converter={StaticResource VisibilityConverter}}"
+                           FontFamily="Segoe UI Semibold" Foreground="White">
+                    Preview All Scenes
+                </Label>
+                <MediaElement x:Name="PreviewClip" Width="426" Height="240" Source="{Binding MergedClip.filePath, Converter={StaticResource StringToURI}}" 
+                              Loaded="PreviewClip_Loaded" LoadedBehavior="Manual" ScrubbingEnabled="True" MediaEnded="PreviewClip_MediaEnded"
+                              MouseLeftButtonDown="PreviewClip_MouseLeftButtonDown" MouseEnter="PreviewClip_MouseEnter" MouseLeave="PreviewClip_MouseLeave" 
+                              Visibility="{Binding AreClipsLoaded, Converter={StaticResource VisibilityConverter}}"/>
+
+                <Button x:Name="btn_hm" Command="{Binding SaveHeatmapCommand}" 
+                        Margin="0,50" Width="150" Background="#FF72C480" FontFamily="Segoe UI Semibold" Foreground="White"
+                        Visibility="{Binding AreClipsLoaded, Converter={StaticResource VisibilityConverter}}">
+                    <Button.Resources>
+                        <Style TargetType="Border">
+                            <Setter Property="CornerRadius" Value="5"/>
+                        </Style>
+                    </Button.Resources>
+                    Generate Heatmap
+                </Button>
+
+
+
+                <!-- rate each scene + selected scenes -->
                 <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
                     <Label Visibility="{Binding AreClipsLoaded, Converter={StaticResource VisibilityConverter}}"
                            FontFamily="Segoe UI Semibold" Foreground="White">
                         Rate each scene
                     </Label>
+
                     <ItemsControl x:Name="lbClips" ItemsSource="{Binding ClipData}" Grid.IsSharedSizeScope="True">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
-                                <StackPanel Orientation="Horizontal" MaxWidth="1600" CanHorizontallyScroll="True"/>
+                                <!--<StackPanel Orientation="Horizontal" MaxWidth="1600" CanHorizontallyScroll="True"/>-->
+                                <WrapPanel  />
                             </ItemsPanelTemplate>
                         </ItemsControl.ItemsPanel>
                         <ItemsControl.ItemTemplate>
@@ -133,49 +165,56 @@
                                               MouseEnter="clipEl_MouseEnter" MouseLeave="clipEl_MouseLeave" 
                                               LoadedBehavior="Manual" Loaded="clipEl_Loaded" ScrubbingEnabled="True" 
                                               MediaEnded="clipEl_MediaEnded" />
-                                    <ListBox x:Name="lisBboxItems" SelectedIndex="{Binding rating, Mode=OneWayToSource}" Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center" SelectionChanged="ListBox_SelectionChanged">
+                                    <ListBox x:Name="lisBboxItems" SelectedIndex="{Binding rating, Mode=OneWayToSource}" Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                             BorderThickness="0" Background="Transparent">
                                         <ListBox.ItemsPanel>
                                             <ItemsPanelTemplate>
                                                 <StackPanel Orientation="Horizontal"/>
                                             </ItemsPanelTemplate>
                                         </ListBox.ItemsPanel>
-                                        <RadioButton GroupName="{Binding ElementName=clipEl, Path=Source}" Style="{StaticResource radioStyle}" Height="50" Width="50"
-                                                     IsChecked="{Binding rating, Converter={StaticResource RatingConverter}, ConverterParameter=1}">
+                                        <RadioButton GroupName="{Binding ElementName=clipEl, Path=Source}" Style="{StaticResource radioStyle}" Height="30" Width="40"
+                                                     IsChecked="{Binding rating, Converter={StaticResource RatingConverter}, ConverterParameter=1}" 
+                                                     Background="Transparent" BorderThickness="0">
                                             <Image Source="/RecorderApp;component/Assets/happy.png"/>
                                         </RadioButton>
-                                        <RadioButton GroupName="{Binding ElementName=clipEl, Path=Source}" Style="{StaticResource radioStyle}" Height="50" Width="50"
-                                                     IsChecked="{Binding rating, Converter={StaticResource RatingConverter}, ConverterParameter=2}">
+                                        <RadioButton GroupName="{Binding ElementName=clipEl, Path=Source}" Style="{StaticResource radioStyle}" Height="30" Width="40"
+                                                     IsChecked="{Binding rating, Converter={StaticResource RatingConverter}, ConverterParameter=2}" 
+                                                     Background="Transparent" BorderThickness="0">
                                             <Image Source="/RecorderApp;component/Assets/neutral.png"/>
                                         </RadioButton>
-                                        <RadioButton GroupName="{Binding ElementName=clipEl, Path=Source}" Style="{StaticResource radioStyle}" Height="50" Width="50"
-                                                     IsChecked="{Binding rating, Converter={StaticResource RatingConverter}, ConverterParameter=3}">
+                                        <RadioButton GroupName="{Binding ElementName=clipEl, Path=Source}" Style="{StaticResource radioStyle}" Height="30" Width="40"
+                                                     IsChecked="{Binding rating, Converter={StaticResource RatingConverter}, ConverterParameter=3}" 
+                                                     Background="Transparent" BorderThickness="0">
                                             <Image Source="/RecorderApp;component/Assets/sad.png"/>
                                         </RadioButton>
                                     </ListBox>
                                 </Grid>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
+                        <ItemsControl.Template>
+                            <ControlTemplate TargetType="{x:Type ItemsControl}">
+                                <ScrollViewer VerticalScrollBarVisibility="Auto" MinHeight="300" MaxWidth="1000" >
+                                    <ItemsPresenter />
+                                </ScrollViewer>
+                            </ControlTemplate>
+                        </ItemsControl.Template>
                     </ItemsControl>
 
-                    <Button Command="{Binding SubmitRateCommand}" Visibility="{Binding AreClipsLoaded, Converter={StaticResource VisibilityConverter}}">Submit Ratings</Button>
 
-                    <Label Visibility="{Binding AreClipsLoaded, Converter={StaticResource VisibilityConverter}}"
-                           FontFamily="Segoe UI Semibold" Foreground="White">
-                        Preview All Scenes
-                    </Label>
-                    <MediaElement x:Name="PreviewClip" Width="200" Height="200" Source="{Binding MergedClip.filePath, Converter={StaticResource StringToURI}}" 
-                              Loaded="PreviewClip_Loaded" LoadedBehavior="Manual" ScrubbingEnabled="True" MediaEnded="PreviewClip_MediaEnded"
-                              MouseLeftButtonDown="PreviewClip_MouseLeftButtonDown" MouseEnter="PreviewClip_MouseEnter" MouseLeave="PreviewClip_MouseLeave" />
-
-                    <Button x:Name="btn_hm" Command="{Binding SaveHeatmapCommand}" 
-                        Margin="0,50" Width="150" Background="#FF72C480" FontFamily="Segoe UI Semibold" Foreground="White"
-                        Visibility="{Binding AreClipsLoaded, Converter={StaticResource VisibilityConverter}}">Generate Heatmap</Button>
-
+                    <Button Command="{Binding SubmitRateCommand}" Margin="10,10,10,30"
+                            Visibility="{Binding AreClipsLoaded, Converter={StaticResource VisibilityConverter}}">
+                        <Button.Resources>
+                            <Style TargetType="Border">
+                                <Setter Property="CornerRadius" Value="5"/>
+                            </Style>
+                        </Button.Resources> 
+                        Submit Ratings
+                    </Button>
 
                 </StackPanel>
 
             </StackPanel>
-        
-    </Grid>
+
+        </Grid>
     </ScrollViewer>
 </Window>

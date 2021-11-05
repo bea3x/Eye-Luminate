@@ -1,5 +1,6 @@
 ﻿using CsvHelper;
 using Prism.Commands;
+using Prism.Events;
 using Prism.Mvvm;
 using RecorderApp.Models;
 using RecorderApp.Utility;

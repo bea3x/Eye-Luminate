@@ -120,6 +120,17 @@ def writeFile(filename, data):
 
     print("Created file '", filename, "'...")
 
+def write2File(filename, data):
+    with open(filename, mode='w', newline='') as validGazeData:
+        
+        header = ['Gaze X', 'Gaze Y', 'Time', 'Time Difference', 'Distance', 'Velocity', 'Classification', 'Centroid X', 'Centroid Y']
+        writer = csv.DictWriter(validGazeData, fieldnames=header)
+
+        writer.writeheader()
+        for x in data: 
+            writer.writerow({'Gaze X': str(x.gazeX), 'Gaze Y': str(x.gazeY), 'Time': str(x.time), 
+            'Time Difference': str(x.time_diff), 'Distance': str(x.distance), 'Velocity': str(x.velocity),
+            'Classification': str(x.classification), 'Centroid X': str(x.centroid_x), 'Centroid Y': str(x.centroid_y)})
 
 if __name__ == "__main__":
     fileName = sys.argv[1]
@@ -127,7 +138,9 @@ if __name__ == "__main__":
     rawData = readFile(fileName)
     
     newData = cleanIVT(rawData)
+    
+    write2File('fixations.csv', newData)
 
     fixGroupData = groupFixation(newData)
     
-    writeFile('fixations.csv', fixGroupData)
+    writeFile('fixationGrps.csv', fixGroupData)

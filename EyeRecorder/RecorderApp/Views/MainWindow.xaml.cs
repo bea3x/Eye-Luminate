@@ -16,7 +16,7 @@ namespace RecorderApp.Views
         {
             InitializeComponent(); 
 
-            Loaded += MainWindow_Loaded;
+            Loaded += MainWindow_Loaded; 
         }
 
         
@@ -48,6 +48,7 @@ namespace RecorderApp.Views
             this.Visibility = Visibility.Collapsed;
             e.Cancel = true;
         }
+
     }
 
     public interface MainView

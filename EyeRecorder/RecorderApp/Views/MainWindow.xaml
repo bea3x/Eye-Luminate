@@ -13,7 +13,7 @@
         </Grid.ColumnDefinitions>
         <ContentControl prism:RegionManager.RegionName="ContentRegion" Grid.ColumnSpan="3" Margin="0,0,0,0.5" />
         <Rectangle Width="15" Fill="#FFCEE3D7" HorizontalAlignment="Left" Margin="0,0,0,0.5"/>
-        <StackPanel Grid.ColumnSpan="2" Margin="0,0,0,0.5" Background="#FF2E3337">
+        <StackPanel Grid.ColumnSpan="2" Margin="0,0,0,0.5">
             <StackPanel.Resources>
                 <Style TargetType="{x:Type Button}">
                     <Setter Property="Margin" Value="0,10,0,0"/>
@@ -26,6 +26,9 @@
                     <Setter Property="Margin" Value="0,25,0,5"/>
                 </Style>
             </StackPanel.Resources>
+            <StackPanel.Background>
+                <ImageBrush ImageSource="/Assets/mainBG.png"/>
+            </StackPanel.Background>
 
             <!-- see selected path
             
@@ -37,7 +40,8 @@
             <TextBlock x:Name="txtSelectedPath" Width="350">
                 <Run Text="{Binding SelectedPath}" FontStyle="Italic"/>
             </TextBlock>
-            <Button x:Name="openFile" Command="{Binding OpenCommand}" FontFamily="Segoe UI Semibold" RenderTransformOrigin="0.5,0.5" Background="#FFB3B3B3" Foreground="White" Content="Select video" BorderBrush="#FFE0E3EB" UseLayoutRounding="False" FontWeight="Bold">
+            <Button x:Name="openFile" Command="{Binding OpenCommand}" FontFamily="Segoe UI Semibold" RenderTransformOrigin="0.5,0.5" Background="#FFB3B3B3" 
+                    Foreground="White" Content="Select video" BorderBrush="#FFE0E3EB" UseLayoutRounding="False" FontWeight="Bold">
                 <Button.Resources>
                     <Style TargetType="Border">
                         <Setter Property="CornerRadius" Value="5"/>
@@ -45,7 +49,7 @@
                 </Button.Resources>
             </Button>
 
-            <Button Command="{Binding NextWindow}" FontWeight="Bold" FontFamily="Segoe UI Semibold" Background="#FF72C480" Foreground="White" Content="Start playing" BorderBrush="#FFE0E3EB">
+            <Button x:Name="btn_start" Command="{Binding NextWindow}" FontWeight="Bold" FontFamily="Segoe UI Semibold" Background="#FF72C480" Foreground="White" Content="Start playing" BorderBrush="#FFE0E3EB">
                 <Button.Resources>
                     <Style TargetType="Border">
                         <Setter Property="CornerRadius" Value="5"/>

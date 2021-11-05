@@ -24,7 +24,6 @@ namespace RecorderApp.Views
     {
         IEventAggregator _ea;
 
-
         public QuickResultsView(IEventAggregator ea)
         {
             InitializeComponent();

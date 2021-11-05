@@ -4,30 +4,44 @@ import time
 import csv
 import sys
 import re
+#from moviepy.video.io.ffmpeg_tools import ffmpeg_extract_subclip
+from moviepy.editor import *
 
 class Fixation:
     
-    def __init__(self, centroidX, centroidY, time_start, time_end, duration):
+    def __init__(self, centroidX, centroidY, time_start, time_end, duration,rank=0):
         self.centroidX = centroidX
         self.centroidY = centroidY
         self.time_start = time_start
         self.time_end = time_end
         self.duration = duration
+        self.rank = rank
 
-#Generate directory path
-def makeDir(count):
-    timestr = time.strftime("%Y%m%d-%H%M%S")
-    folderpath = "./Results/" + str(timestr) + "-" + str(count)
-    if not os.path.exists(folderpath):
-        os.makedirs(folderpath)
-    if not os.path.exists(folderpath):
-        os.makedirs(folderpath)
-    print ("Saving frames to " + folderpath)
+class GazeData:
+    def __init__(self, gazeX, gazeY, time, time_diff=0, distance=0, velocity=0, classification='', centroid_x=0, centroid_y=0):
+        self.gazeX = gazeX
+        self.gazeY = gazeY
+        self.time = time
+        self.time_diff = time_diff
+        self.distance = distance
+        self.velocity = velocity
+        self.classification = classification
+        self.centroid_x = centroid_x
+        self.centroid_y = centroid_y 
 
-    return folderpath
+class VideoClip:
+        
+    def __init__(self, name, fullpath, duration, rank, imgpath, rating=0, rateValue=""):
+        self.name = name
+        self.fullpath = fullpath
+        self.duration = duration
+        self.rank = rank
+        self.imgpath = imgpath
+        self.rating = rating
+        self.rateValue = rateValue
 
 
-
+# * read data from finalGazeData
 def readFile(filename):
     readList = []
     with open(filename) as csv_file:
@@ -40,19 +54,125 @@ def readFile(filename):
     
     return readList
 
+
+# * remove erroneous data post-ivt
+def cleanIVT (data):
+    dataList = []
+    #initialize values
+    centroid_x = centroid_y = 0
+
+    for row in data:
+        if row.classification == "saccade":
+            centroid_x = 0
+            centroid_y = 0
+        else: 
+            centroid_x = row.centroid_x
+            centroid_y = row.centroid_y
+
+        dataList.append(GazeData(row.gazeX, row.gazeY, row.time, row.time_diff, row.distance, 
+            row.velocity, row.classification, centroid_x, centroid_y))
+    
+    return dataList
+
+
+# * group fixations and reshape? data structure 
+def groupFixation(data):
+    dataList = []
+    inGroup = False
+    timeStart = 0
+
+    for idx, row in enumerate(data):
+        nextX = 0
+        if (idx+1 < len(data)):
+            nextEl = data[idx+1]
+            prevEl = data[idx-1]
+            nextX = nextEl.centroid_x
+            #print(row.centroidX, " ", nextEl.centroidX)
+        # * check if fixation or saccade 
+        if row.classification == "fixation":
+            # * check if next row has the same centroid_x coordinate (whether theyre in the same fixation group)
+            if row.centroid_x == nextX: #if ingroup
+            
+                if not(inGroup):
+                    timeStart = row.time
+                    inGroup = True
+            else:
+                inGroup = False
+                # * checks if fixation is the only member of group. if so, duration is set according to timestamp of current row and timestamp of next row 
+                # TODO: check validity of logic lol
+                if timeStart == 0 or prevEl.classification == "saccade" and nextEl.classification == "saccade":
+                    print(row.time, nextEl.time)
+                    timeStart = row.time
+                    timeEnd = nextEl.time
+                else:
+                    timeEnd = row.time
+                duration = int(timeEnd) - int(timeStart)
+
+                dataList.append(Fixation(row.centroid_x, row.centroid_y, timeStart, timeEnd, duration))
+
+    return dataList
+
+
+
+#Generate directory path
+def makeDir(count=0,timestr=""):
+    if(timestr == ""):
+        timestr = time.strftime("%Y%m%d-%H%M%S")
+    #folderpath = "./Results/" + str(timestr) + "-" + str(count)
+    if (count == 0):
+        folderpath = destPath + "/Results/" + str(timestr) + "-merged"
+    else:
+        folderpath = destPath + "/Results/" + str(timestr) + "-" + str(count)
+    if not os.path.exists(folderpath):
+        os.makedirs(folderpath)
+    if not os.path.exists(folderpath):
+        os.makedirs(folderpath)
+    print ("Saving frames to " + folderpath)
+
+    return folderpath
+
+def makeAssetDir():
+    timestr = time.strftime("%Y%m%d-%H%M%S")
+    folderpath = destPath + "/Assets/" + str(timestr)
+    if not os.path.exists(folderpath):
+        os.makedirs(folderpath)
+    if not os.path.exists(folderpath):
+        os.makedirs(folderpath)
+    print ("Creating folder " + folderpath)
+
+    return folderpath
+
+
+
 def writeFile(filename, data):
     print("Making file '", filename, "'...")
 
     with open(filename, mode='w', newline='') as validGazeData:
-        header = ['Centroid X', 'Centroid Y', 'Time Start', 'Time End', 'Duration']
+        header = ['Centroid X', 'Centroid Y', 'Time Start', 'Time End', 'Duration', 'Rank']
         writer = csv.DictWriter(validGazeData, fieldnames=header)
 
         writer.writeheader()
         for x in data: 
             writer.writerow({'Centroid X': str(x.centroidX), 'Centroid Y': str(x.centroidY), 'Time Start': str(x.time_start), 
-            'Time End': str(x.time_end), 'Duration': str(x.duration)})   
+            'Time End': str(x.time_end), 'Duration': str(x.duration), 'Rank': str(x.rank)})   
             
     print("Created file '", filename, "'...")
+
+
+def writeClipDetails(filename, data):
+    print("Making file '", filename, "'...")
+
+    with open(filename, mode='w', newline='') as clipDetails:
+        header = ['File Name', 'File Path', 'Duration', 'Rank', 'Image Path', 'Rating', 'Rating Value']
+        writer = csv.DictWriter(clipDetails, fieldnames=header)
+
+        writer.writeheader()
+        for x in data: 
+            writer.writerow({'File Name': x.name, 'File Path': str(x.fullpath), 'Duration': str(x.duration), 
+            'Rank': str(x.rank), 'Image Path': str(x.imgpath), 'Rating': str(x.rating), 'Rating Value': str(x.rateValue)})   
+            
+    print("Created file '", filename, "'...")
+
 
 # * sorts data according to fixation duration, descending order
 def sortByDuration(data):
@@ -61,7 +181,14 @@ def sortByDuration(data):
 
 # * gets highest n from list of data where n is # set by user
 def getHighestN(data, n):
-    return data[:n] 
+    data = data[:n]
+
+    count = 1
+    for x in data:
+        x.rank = count
+        count += 1
+
+    return data 
 
 # * sorts selected scenes on chronological order before frames are extracted 
 def sortByTimeStart(data):
@@ -97,17 +224,32 @@ def getFrameSets(vidPath, time_start, time_end, folderpath):
             break
 
     cap.release()
-
+    return os.path.join(folderpath, "frame0.jpg")
 
 def selectScenes(data, vidPath):
     count = 1
+    selectedClips = []
     for x in data:
+        #create folder for frames
         folderpath = makeDir(count)
-        getFrameSets(vidPath, x.time_start, x.time_end, folderpath)
+        #create folder for thumbnails
+        #imgspath = makeAssetDir()
+        imgPath = getFrameSets(vidPath, x.time_start, x.time_end, folderpath)
 
-        createClip(folderpath)
+        clipName = createClip(vidPath, x.time_start, x.time_end, folderpath)
+        #path = os.path.join(os.getcwd(),clipName)
+        path = os.path.join(destPath, clipName)
+        #path = destPath + "/" + clipName
+        print("path: " + path)
+        #imgPath =generateThumbnail(vidPath, )
+        selectedClips.append(VideoClip(clipName,path,x.duration,x.rank,imgPath))
+
         print("Done", count, "out of", len(data))
         count += 1
+    
+    if len(selectedClips) > 1:
+        selectedClips = createMergedClip(vidPath, selectedClips)
+    return selectedClips
 
 #region sort filename with int/float properly
 def atof(text):
@@ -122,47 +264,80 @@ def natural_keys(text):
 
 #endregion
 
-def createClip(folderpath):
+def createClip(vidPath, time_start, time_end, folderpath):
     x = folderpath.rfind('/')
-    video_name = folderpath[x+1:] + ".avi"
+    video_name = folderpath[x+1:] + ".mp4"
+    #time_start = float(time_start)/1000.0 
+    #time_end = float(time_end)/1000.0 
+    #print(time_start/1000, " ", time_end/1000)
+    #ffmpeg_extract_subclip(vidPath, time_start/1000, time_end/1000, targetname=video_name)
+    clip = VideoFileClip(vidPath).subclip(time_start/1000, time_end/1000)
+    clip.write_videofile(os.path.join(destPath,video_name))
+    clip.close()
 
-    each_image_duration = 5 # in secs
-    fourcc = cv2.VideoWriter_fourcc(*'XVID') # define the video codec
+    return video_name
 
-    #sort filenames with float value
-    images = [img for img in os.listdir(folderpath) if img.endswith(".jpg")]
-    images.sort(key=natural_keys)
+def createMergedClip(vidPath, clipsList):
+    timestr = time.strftime("%Y%m%d-%H%M%S")
+    video_name = timestr + "-merged.mp4"
+    
+    t_duration = 0
+    clipLst = []
+    #! TODO:use list comprehension instead
+    for clip in clipsList:
+        cl = VideoFileClip(clip.fullpath.replace('/','\\'))
+        clipLst.append(cl)
+        print("clip path",clip.fullpath.replace('/','\\'))
+        t_duration += clip.duration
+        print("clip duration",clip.duration)
 
-    img_count = len(images)
-    video_secs = 1
-    frame = cv2.imread(os.path.join(folderpath, images[0]))
-    height, width, layers = frame.shape
+    merged_clip = concatenate_videoclips(clipLst)
+    folderpath = makeDir(0,timestr)
+    imgPath = getFrameSets(vidPath, 0, merged_clip.duration, folderpath)
+    path = os.path.join(destPath, video_name)
+    
+    #path = destPath + "/" + video_name
+    #merged_clip = merged_clip.fx( vfx.speedx, 1.25)
+    merged_clip.write_videofile(os.path.join(destPath,video_name))
+    clipsList.append(VideoClip(video_name,path,t_duration,0,imgPath))
 
-    #video = cv2.VideoWriter(video_name, fourcc, 30.0, (width, height))
-    video = cv2.VideoWriter(video_name, fourcc, float(img_count/video_secs), (width, height))
-    print("Creating clip from frames...")
-    for image in images:
-        for _ in range(each_image_duration):
-            video.write(cv2.imread(os.path.join(folderpath, image)))
+    return clipsList
 
-    print("Created Clip", video_name)
-    cv2.destroyAllWindows()
-    video.release()
+def write2File(filename, data):
+    with open(filename, mode='w', newline='') as validGazeData:
+        
+        header = ['Gaze X', 'Gaze Y', 'Time', 'Time Difference', 'Distance', 'Velocity', 'Classification', 'Centroid X', 'Centroid Y']
+        writer = csv.DictWriter(validGazeData, fieldnames=header)
 
+        writer.writeheader()
+        for x in data: 
+            writer.writerow({'Gaze X': str(x.gazeX), 'Gaze Y': str(x.gazeY), 'Time': str(x.time), 
+            'Time Difference': str(x.time_diff), 'Distance': str(x.distance), 'Velocity': str(x.velocity),
+            'Classification': str(x.classification), 'Centroid X': str(x.centroid_x), 'Centroid Y': str(x.centroid_y)})
 
 if __name__ == "__main__":
     filename = sys.argv[1]
     n = int(sys.argv[2])
     vidPath = sys.argv[3]
+    destPath = sys.argv[4]
+    print('filename: ', filename)
+    #destPath = os.path.abspath("r" + "'" + destPath + "'")
+    #destPath = os.path.abspath(sys.argv[4])
+    destPath = destPath.replace("\\","/")
+    print("destination", destPath)
+    #print("destination path", destPath.replace('\','/'))
     
-    fixData = readFile(filename)
 
+    fixData = readFile(filename)
+    
     sortedData = sortByDuration(fixData)
     writeFile('sorted.csv', sortedData)
-
-    highestN = getHighestN(sortedData, n)
-    #writeFile('highestN.csv', highestN)
+    
+    highestN = getHighestN(sortedData, n)  
+    writeFile('highestN.csv', highestN)
 
     chronData = sortByTimeStart(highestN)
 
-    selectScenes(chronData, vidPath)
+    clipInfo = selectScenes(chronData, vidPath)
+
+    writeClipDetails('selectedClipInfo.csv', clipInfo)

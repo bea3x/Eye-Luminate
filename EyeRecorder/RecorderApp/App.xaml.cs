@@ -5,6 +5,7 @@ using System.Windows;
 using System.Diagnostics;
 using System.Threading;
 using System;
+using RecorderApp.Dialogs;
 
 namespace RecorderApp
 {
@@ -49,6 +50,9 @@ namespace RecorderApp
             containerRegistry.Register<IView3, QuickResultsView>();
 
             containerRegistry.Register<MainView, MainWindow>();
+
+            // message dialog
+            containerRegistry.RegisterDialog<MessageDialog, MessageDialogViewModel>();
 
         }
         

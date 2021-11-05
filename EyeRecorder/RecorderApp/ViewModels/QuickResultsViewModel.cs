@@ -2,6 +2,7 @@
 using Prism.Commands;
 using Prism.Events;
 using Prism.Mvvm;
+using Prism.Services.Dialogs;
 using RecorderApp.Models;
 using RecorderApp.Utility;
 using RecorderApp.Views;
@@ -31,10 +32,15 @@ namespace RecorderApp.ViewModels
         IEventAggregator _ea;
         public bool getAll { get; set; }
         FileInfo[] Files;
-        public QuickResultsViewModel(IEventAggregator ea)
+
+        IDialogService _dialogService;
+        string hmOutputPath;
+        public QuickResultsViewModel(IEventAggregator ea, IDialogService dialogService)
         {
             runCount = 0;
             _ea = ea;
+            _dialogService = dialogService;
+
             _ea.GetEvent<SavePathEvent>().Subscribe(GetVidPath);
             //this.OpenCommand = new RelayCommand(this.OpenFile);
             this.OpenVidCommand = new RelayCommand(this.OpenVid);
@@ -70,17 +76,19 @@ namespace RecorderApp.ViewModels
             }
 
             dir = new DirectoryInfo(gazeOutputPath); //Assuming Test is your Folder
-         
+
 
             outputFileDirectory = Path.Combine(exeRuntimeDirectory, "Output");
             selectedPath = Path.Combine(outputFileDirectory, "Clips");
+            hmOutputPath = Path.Combine(outputFileDirectory, "Heatmaps");
             //InitLoad();
 
             _ea.GetEvent<RecStatusEvent>().Subscribe(GetTrackingStatus);
             _ea.GetEvent<ListboxWatchEvent>().Subscribe(ChangeVidPath);
             Console.WriteLine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location));
-        }
 
+            inProcess(false);
+        }
 
         #region Binding for Rating
 
@@ -93,7 +101,7 @@ namespace RecorderApp.ViewModels
 
             foreach (VideoClip clip in ClipData)
             {
-                
+
                 Console.WriteLine(clip.fileName + " " + clip.rating + " " + getRateValue(clip.rating));
                 clip.rateValue = getRateValue(clip.rating);
                 UserClipData.Add(clip);
@@ -129,7 +137,7 @@ namespace RecorderApp.ViewModels
         public bool AreClipsLoaded
         {
             get { return _areClipsLoaded; }
-            set 
+            set
             {
                 SetProperty(ref _areClipsLoaded, value);
             }
@@ -138,6 +146,27 @@ namespace RecorderApp.ViewModels
         private void clipsDoneLoading(bool status)
         {
             AreClipsLoaded = status;
+        }
+
+        #endregion
+
+        #region loading circle bidn
+
+        private bool _isProcessing;
+
+        public bool IsProcessing
+        {
+            get { return _isProcessing; }
+            set
+            {
+                //_isProcessing = value; 
+                SetProperty(ref _isProcessing, value);
+            }
+        }
+
+        private void inProcess(bool status)
+        {
+            IsProcessing = status;
         }
 
         #endregion
@@ -159,7 +188,7 @@ namespace RecorderApp.ViewModels
             // 3. find name from directory of clips if it exists
             string default_vidfolder = getParent();
             DirectoryInfo defaultDir = new DirectoryInfo(default_vidfolder);
-            FileInfo[] matched = defaultDir.GetFiles(name+"*");
+            FileInfo[] matched = defaultDir.GetFiles(name + "*");
 
             // 4. assign path to SelectedVid
             if (matched.Any())
@@ -167,7 +196,7 @@ namespace RecorderApp.ViewModels
 
                 Console.WriteLine(matched.First().FullName);
                 SelectedVid = matched.First().FullName;
-            }         
+            }
 
         }
 
@@ -193,7 +222,7 @@ namespace RecorderApp.ViewModels
             if (done)
             {
                 getLast();
-            } 
+            }
             else
             {
                 getFileList();
@@ -218,7 +247,7 @@ namespace RecorderApp.ViewModels
             }
 
             //SelectedCSV = (FileInfo)FileList.FirstOrDefault();
-            
+
         }
 
         public void getLast()
@@ -281,7 +310,7 @@ namespace RecorderApp.ViewModels
         public VideoClip MergedClip
         {
             get { return _mergedClip; }
-            set 
+            set
             {
                 SetProperty(ref _mergedClip, value);
             }
@@ -297,10 +326,10 @@ namespace RecorderApp.ViewModels
                 App.Current.Dispatcher.Invoke((Action)delegate // <--- HERE
                 {
                     // separate merged clip and add the rest to observable collection
-                    if(obj.rank == 0)
+                    if (obj.rank == 0)
                     {
                         MergedClip = obj;
-                    } 
+                    }
                     else
                     {
                         clipData.Add(obj);
@@ -329,26 +358,21 @@ namespace RecorderApp.ViewModels
             }
         }
 
-        private string numScenes;
 
+        private string numScenes;
         public string NumScenes
         {
             get { return numScenes; }
-            set
-            {
-                numScenes = value;
-                RaisePropertyChanged("NumScenes");
-            }
+            set { SetProperty(ref numScenes, value); }
         }
 
-        
 
         private FileInfo selectedCSV;
 
         public FileInfo SelectedCSV
         {
             get { return selectedCSV; }
-            set 
+            set
             {
                 //selectedCSV = value;
                 //RaisePropertyChanged("SelectedCSV");
@@ -358,7 +382,7 @@ namespace RecorderApp.ViewModels
 
 
 
-        
+
         #endregion
 
         #region BackgroundWorker
@@ -370,7 +394,7 @@ namespace RecorderApp.ViewModels
         public bool ProgressVisibility
         {
             get { return _progressVisibility; }
-            set 
+            set
             {
                 _progressVisibility = value;
                 RaisePropertyChanged("ProgressVisibility");
@@ -382,19 +406,19 @@ namespace RecorderApp.ViewModels
         public string Output
         {
             get { return _output; }
-            set 
+            set
             {
                 SetProperty(ref _output, value);
             }
         }
 
-        private bool _startEnabled = true;      
+        private bool _startEnabled = true;
 
         public bool StartEnabled
         {
             get { return _startEnabled = true; }
-            set 
-            { 
+            set
+            {
                 _startEnabled = value;
                 RaisePropertyChanged("StartEnabled");
             }
@@ -443,7 +467,7 @@ namespace RecorderApp.ViewModels
             worker.CancelAsync();
         }
 
-        
+
         #endregion
 
         /// <summary>
@@ -451,18 +475,14 @@ namespace RecorderApp.ViewModels
         /// </summary>
         public void reload()
         {
+            clipsDoneLoading(false);
             App.Current.Dispatcher.Invoke((Action)delegate // <--- HERE
             {
                 clipData.Clear();
             });
+
             _currentProgress = 0;
         }
-
-        #region Task Async
-
-
-
-        #endregion
 
         #region Choose Destination Folder for output
 
@@ -473,8 +493,7 @@ namespace RecorderApp.ViewModels
             get { return selectedPath; }
             set
             {
-                selectedPath = value;
-                RaisePropertyChanged("SelectedPath");
+                SetProperty(ref selectedPath, value);
             }
         }
 
@@ -482,7 +501,7 @@ namespace RecorderApp.ViewModels
         private void ChooseFolder()
         {
             FolderBrowserDialog fbd = new FolderBrowserDialog();
-            if (fbd.ShowDialog() == DialogResult.OK)
+            if (fbd.ShowDialog() == System.Windows.Forms.DialogResult.OK)
             {
                 SelectedPath = fbd.SelectedPath;
             }
@@ -508,7 +527,7 @@ namespace RecorderApp.ViewModels
             SelectedFile = filePath;
         }
 
-        
+
         public ICommand OpenCommand { get; set; }
         /// <summary>
         /// open csv file
@@ -660,8 +679,12 @@ namespace RecorderApp.ViewModels
 
         private async void SaveHeatmap()
         {
+            inProcess(true);
+            Output = "Generating clip with heatmap...";
             Console.WriteLine("saveheatmap");
             await saveHeatmap();
+            inProcess(false);
+            Output = "Generating clip with heatmap...Done";
         }
 
         private async Task saveHeatmap()
@@ -674,7 +697,6 @@ namespace RecorderApp.ViewModels
 
 
             outputFileDirectory = Path.Combine(exeRuntimeDirectory, "Output");
-            string hmOutputPath = Path.Combine(exeRuntimeDirectory, "Output", "Heatmaps");
             if (!System.IO.Directory.Exists(hmOutputPath))
             {
                 System.IO.Directory.CreateDirectory(hmOutputPath);
@@ -688,7 +710,7 @@ namespace RecorderApp.ViewModels
                 Console.WriteLine(fn + " exists");
 
                 string csvFile = Path.GetFileName(fn);
-                string vidPath = selectedVid; 
+                string vidPath = selectedVid;
                 string args = csvFile + " " + '"' + vidPath + '"';
                 //runScript(scriptPath, args, destPath);
                 Console.WriteLine("chosen args: " + args);
@@ -777,7 +799,8 @@ namespace RecorderApp.ViewModels
             Output = "Cleaning Data...";
             validGazeData = await Task.Run(() => CleanData());
 
-            SelectedFile = writeFile(validGazeData, "validGazeData");
+            string filename = Path.GetFileNameWithoutExtension(selectedCSV.FullName) + "_validGazeData";
+            SelectedFile = writeFile(validGazeData, filename);
         }
 
         private async Task doIVTAsync()
@@ -785,6 +808,7 @@ namespace RecorderApp.ViewModels
             List<GazeData> finalGazeData = new List<GazeData>();
             Output = "Performing IVT...";
             finalGazeData = await Task.Run(() => PerformIVT());
+
             string filename = Path.GetFileNameWithoutExtension(selectedCSV.FullName) + "_finalGazeData";
             SelectedFile = writeFile(finalGazeData, filename);
         }
@@ -794,45 +818,103 @@ namespace RecorderApp.ViewModels
             Output = "Extracting Scenes...";
             await Task.Run(() => extractScenes());
         }
-        
+
+        private bool checkFields()
+        {
+            if (numScenes != null)
+            {
+                var isNumeric = int.TryParse(numScenes, out int n);
+
+                if (n <= 0 || n > 20)
+                {
+                    ShowDialog("Invalid number of scenes entered. Please try again");
+                    return false;
+                }
+           
+            }
+            else
+            {
+                ShowDialog("Number of scenes cannot be empty.");
+                return false;
+            }
+
+            if (selectedCSV == null)
+            {
+                ShowDialog("No selected csv file");
+                return false;
+            }
+            else if (selectedVid == null)
+            {
+                ShowDialog("No selected video file");
+                return false;
+            }
+
+            return true;
+        }
+
+        #region Error Dialog
+
+        private void ShowDialog(string dialogMessage)
+        {
+            var p = new DialogParameters();
+            p.Add("message", dialogMessage);
+
+            _dialogService.ShowDialog("MessageDialog", p, result =>
+            {
+                if (result.Result == ButtonResult.OK)
+                {
+                    Console.WriteLine("Naclose mo ata");
+
+                }
+            });
+        }
+
+        #endregion
+
         private async void SelectScenes()
         {
-            if (runCount != 0)
+            if (checkFields())
             {
-                reload();
-            }
-            runCount++;
+                if (runCount != 0)
+                {
+                    reload();
+                }
+                runCount++;
 
-            Thread.Sleep(100);
-            worker.ReportProgress(_currentProgress+=5);
-            SelectedFile = SelectedCSV.FullName;
-            Thread.Sleep(100);
-            worker.ReportProgress(_currentProgress += 15);
-            await cleanDataAsync();
+                inProcess(true);
+                Thread.Sleep(100);
+                //worker.ReportProgress(_currentProgress+=5);
+                SelectedFile = SelectedCSV.FullName;
+                Thread.Sleep(100);
+                //worker.ReportProgress(_currentProgress += 15);
+                await cleanDataAsync();
+
+                //perform IVT algo
+                Thread.Sleep(100);
+                //worker.ReportProgress(_currentProgress += 25);
+                await doIVTAsync();
+
+
+                Thread.Sleep(100);
+                //worker.ReportProgress(_currentProgress += 25);
+                //group fixations and extract scenes
+                await getScenes();
+
+                Output = "Loaded Clips...";
+                //TODO: modify and make not brute-force
+                string filename = Path.GetFileNameWithoutExtension(selectedCSV.FullName) + "_selectedClipInfo.csv";
+                string infoDir = Path.Combine(outputFileDirectory, filename);
+                Console.WriteLine(infoDir);
+                if (File.Exists(infoDir))
+                {
+                    Console.WriteLine("file exists");
+                    Load(infoDir);
+                }
+                Thread.Sleep(100);
+                worker.ReportProgress(_currentProgress = 100);
+                inProcess(false);
+            }
             
-            //perform IVT algo
-            Thread.Sleep(100);
-            worker.ReportProgress(_currentProgress += 25);
-            await doIVTAsync();
-
-
-            Thread.Sleep(100);
-            worker.ReportProgress(_currentProgress += 25);
-            //group fixations and extract scenes
-            await getScenes();
-
-            Output = "Loaded Clips...";
-            //TODO: modify and make not brute-force
-            string filename = Path.GetFileNameWithoutExtension(selectedCSV.FullName) + "_selectedClipInfo.csv";
-            string infoDir = Path.Combine(outputFileDirectory, filename);
-            Console.WriteLine(infoDir);
-            if (File.Exists(infoDir))
-            {
-                Console.WriteLine("file exists");
-                Load(infoDir);
-            }
-            Thread.Sleep(100);
-            worker.ReportProgress(_currentProgress=100);
         }
 
         #endregion

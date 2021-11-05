@@ -134,15 +134,15 @@ def readFile(filename):
         for gazeX, gazeY, time, time_diff, distance, velocity, classification, centroid_x, centroid_y in reader:
             gazeData.append(GazeData(int(gazeX), int(gazeY), int(time), int(time_diff), distance, velocity, classification, float(centroid_x), float(centroid_y))) 
 
-        return gazeData
+    return gazeData
 
 
 
 def subList(data):
     lst = []
     for x in data:
-        #lst.append([x.centroid_x, x.centroid_y, x.time])
-        lst.append([x.gazeX, x.gazeY, x.time])
+        lst.append([x.centroid_x, x.centroid_y, x.time])
+        #lst.append([x.gazeX, x.gazeY, x.time])
 
 
     tuples = [tuple(x) for x in lst]
@@ -161,8 +161,8 @@ def drawHeatmap(data, vidPath, filename):
         video_path=vid,
         points=gPoints
      )
-
-    heatmap_video.write_videofile(filename, bitrate="5000k", fps=24)
+    fp = os.path.join(destPath,filename)
+    heatmap_video.write_videofile(fp, bitrate="5000k", fps=24)
 
 
 if __name__ == "__main__":

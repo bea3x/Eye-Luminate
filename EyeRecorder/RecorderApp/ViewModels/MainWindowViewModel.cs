@@ -1,6 +1,7 @@
 ﻿using Prism.Commands;
 using Prism.Events;
 using Prism.Mvvm;
+using Prism.Services.Dialogs;
 using RecorderApp.Models;
 using RecorderApp.Utility;
 using RecorderApp.Views;
@@ -21,21 +22,41 @@ namespace RecorderApp.ViewModels
                 SetProperty(ref _title, value);
             }
         }
-
+        IDialogService _dialogService;
         IEventAggregator _ea;
         public IView _view;
         public IView2 _view2;
         public IView3 _view3;
-        public MainWindowViewModel(IView view, IView2 view2, IView3 view3, IEventAggregator ea)
+        public MainWindowViewModel(IView view, IView2 view2, IView3 view3, IEventAggregator ea, IDialogService dialogService)
         {
             _view = view;
             _view2 = view2;
             _view3 = view3;
             _ea = ea;
+            _dialogService = dialogService;
             this.OpenCommand = new RelayCommand(this.OpenFile);
 
 
         }
+
+        #region Error Dialog
+
+        private void ShowDialog(string dialogMessage)
+        {
+            var p = new DialogParameters();
+            p.Add("message", dialogMessage);
+
+            _dialogService.ShowDialog("MessageDialog", p, result =>
+            {
+                if (result.Result == ButtonResult.OK)
+                {
+                    Console.WriteLine("Naclose mo ata");
+
+                }
+            });
+        }
+
+        #endregion
 
         #region Open New Window Methods
         private DelegateCommand _nextWindow;
@@ -45,9 +66,18 @@ namespace RecorderApp.ViewModels
 
         void ExecuteNextWindow()
         {
-            Next?.Invoke();
-            SendTrackingStatus(true);
-            _view.Open(this.SelectedPath);
+            if (selectedPath != null)
+            {
+
+                Next?.Invoke();
+                SendTrackingStatus(true);
+                _view.Open(this.SelectedPath);
+            } 
+            else
+            {
+                var msg = "No Video File Selected.";
+                ShowDialog(msg);
+            }
         }
 
         #endregion
@@ -90,6 +120,10 @@ namespace RecorderApp.ViewModels
             get { return selectedPath; }
             set 
             {
+                if (string.IsNullOrEmpty(value))
+                {
+                    throw new ArgumentException("No Video file selected");
+                }
                 SetProperty(ref selectedPath, value);
             }
         }
@@ -132,7 +166,7 @@ namespace RecorderApp.ViewModels
         private void KeepVidPath()
         {
             _ea.GetEvent<SavePathEvent>().Publish(SelectedPath);
-            //Console.WriteLine("helo " + SelectedPath);
+            Console.WriteLine("helo " + SelectedPath);
         }
 
         private void SendTrackingStatus(bool status)

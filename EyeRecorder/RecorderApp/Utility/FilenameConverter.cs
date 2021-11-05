@@ -42,8 +42,16 @@ namespace RecorderApp.Utility
         }
         public string dateTimeConvert(string dt)
         {
-            DateTime d = DateTime.ParseExact(dt, "yyyyMMdd-HHmmss", CultureInfo.InvariantCulture);
-            return d.ToString();
+            try
+            {
+
+                DateTime d = DateTime.ParseExact(dt, "yyyyMMdd-HHmmss", CultureInfo.InvariantCulture);
+                return d.ToString();
+            } 
+            catch 
+            {
+                return "";
+            }
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
