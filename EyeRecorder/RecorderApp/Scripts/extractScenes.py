@@ -31,12 +31,13 @@ class GazeData:
 
 class VideoClip:
         
-    def __init__(self, name, fullpath, duration, rank, imgpath, rating=0, rateValue=""):
+    def __init__(self, name, fullpath, time_start, time_end, duration, rank, rating=0, rateValue=""):
         self.name = name
         self.fullpath = fullpath
+        self.time_start = time_start
+        self.time_end = time_end
         self.duration = duration
         self.rank = rank
-        self.imgpath = imgpath
         self.rating = rating
         self.rateValue = rateValue
 
@@ -162,13 +163,13 @@ def writeClipDetails(filename, data):
     print("Making file '", filename, "'...")
 
     with open(filename, mode='w', newline='') as clipDetails:
-        header = ['File Name', 'File Path', 'Duration', 'Rank', 'Image Path', 'Rating', 'Rating Value']
+        header = ['File Name', 'File Path', 'Time Start', 'Time End' , 'Duration', 'Rank', 'Rating', 'Rating Value']
         writer = csv.DictWriter(clipDetails, fieldnames=header)
 
         writer.writeheader()
         for x in data: 
-            writer.writerow({'File Name': x.name, 'File Path': str(x.fullpath), 'Duration': str(x.duration), 
-            'Rank': str(x.rank), 'Image Path': str(x.imgpath), 'Rating': str(x.rating), 'Rating Value': str(x.rateValue)})   
+            writer.writerow({'File Name': x.name, 'File Path': str(x.fullpath), 'Time Start': str(x.time_start), 'Time End': str(x.time_end) ,'Duration': str(x.duration), 
+            'Rank': str(x.rank), 'Rating': str(x.rating), 'Rating Value': str(x.rateValue)})   
             
     print("Created file '", filename, "'...")
 
@@ -241,7 +242,7 @@ def selectScenes(data, vidPath):
         #path = destPath + "/" + clipName
         print("path: " + path)
         #imgPath =generateThumbnail(vidPath, )
-        selectedClips.append(VideoClip(clipName,path,x.duration,x.rank,imgPath))
+        selectedClips.append(VideoClip(clipName,path,x.time_start,x.time_end,x.duration,x.rank))
 
         print("Done", count, "out of", len(data))
         count += 1
@@ -298,7 +299,7 @@ def createMergedClip(vidPath, clipsList):
     #path = destPath + "/" + video_name
     #merged_clip = merged_clip.fx( vfx.speedx, 1.25)
     merged_clip.write_videofile(os.path.join(destPath,video_name))
-    clipsList.append(VideoClip(video_name,path,t_duration,0,imgPath))
+    clipsList.append(VideoClip(video_name,path,0,0,t_duration,0))
 
     return clipsList
 

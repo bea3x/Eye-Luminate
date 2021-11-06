@@ -19,7 +19,10 @@ namespace RecorderApp.Utility
         {
             this.function = function;
         }
-
+        public RelayCommand(Action<object> p1)
+        {
+            P1 = p1;
+        }
         public RelayCommand(Action<object> p1, Func<object, bool> p2)
         {
             P1 = p1;

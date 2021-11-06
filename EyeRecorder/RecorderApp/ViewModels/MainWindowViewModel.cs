@@ -27,11 +27,13 @@ namespace RecorderApp.ViewModels
         public IView _view;
         public IView2 _view2;
         public IView3 _view3;
-        public MainWindowViewModel(IView view, IView2 view2, IView3 view3, IEventAggregator ea, IDialogService dialogService)
+        public IView4 _view4;
+        public MainWindowViewModel(IView view, IView2 view2, IView3 view3, IView4 view4, IEventAggregator ea, IDialogService dialogService)
         {
             _view = view;
             _view2 = view2;
             _view3 = view3;
+            _view4 = view4;
             _ea = ea;
             _dialogService = dialogService;
             this.OpenCommand = new RelayCommand(this.OpenFile);
@@ -111,6 +113,21 @@ namespace RecorderApp.ViewModels
         }
 
         #endregion
+
+        #region Open Multi-user Results Window
+
+        private DelegateCommand _multiUserResWindow;
+        public DelegateCommand MultiUserResWindow =>
+            _multiUserResWindow ?? (_multiUserResWindow = new DelegateCommand(ShowMultiUserResWindow));
+
+        void ShowMultiUserResWindow()
+        {
+            Next?.Invoke();
+            _view4.Open();
+        }
+
+        #endregion
+
         #region Get File Methods / Open File Dialog
 
         private string selectedPath;

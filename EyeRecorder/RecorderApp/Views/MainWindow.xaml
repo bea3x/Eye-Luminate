@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:prism="http://prismlibrary.com/" 
         prism:ViewModelLocator.AutoWireViewModel="True"
-        Title="{Binding Title}" Height="500" Width="625"
+        Title="{Binding Title}" Height="550" Width="655"
         WindowStartupLocation="CenterScreen">
 
     <Grid>
@@ -78,6 +78,15 @@
                 </Button.Resources>
             </Button>
             <Button Command="{Binding QuickResultsWindow}" FontFamily="Segoe UI Semibold" Background="#FF72C480" Foreground="White" BorderBrush="#FFE0E3EB" Content="Quick Mode" FontWeight="Bold">
+                <Button.Resources>
+                    <Style TargetType="Border">
+                        <Setter Property="CornerRadius" Value="5"/>
+                    </Style>
+                </Button.Resources>
+            </Button>
+
+            <Button Command="{Binding MultiUserResWindow}" FontFamily="Segoe UI Semibold" Background="#FF72C480" Foreground="White" BorderBrush="#FFE0E3EB" 
+                    Content="Multi-user Data" FontWeight="Bold">
                 <Button.Resources>
                     <Style TargetType="Border">
                         <Setter Property="CornerRadius" Value="5"/>

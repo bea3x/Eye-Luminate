@@ -47,7 +47,8 @@ namespace RecorderApp.ViewModels
 
             this.ChooseDestPath = new RelayCommand(this.ChooseFolder);
 
-            this.SelectScenesCommand = new RelayCommand(this.SelectScenes);
+            //this.SelectScenesCommand = new RelayCommand(this.SelectScenes);
+            this.SelectScenesCommand = new RelayCommand(this.SaveScenes);
             this.SubmitRateCommand = new RelayCommand(this.SaveRating);
             this.SaveHeatmapCommand = new RelayCommand(this.SaveHeatmap);
             //this.SelectScenesCommand = new RelayCommand(this.StartProcess);
@@ -497,13 +498,29 @@ namespace RecorderApp.ViewModels
             }
         }
 
+        private string _fbdTitle;
+
+        public string FBDTitle
+        {
+            get { return _fbdTitle; }
+            set { SetProperty(ref _fbdTitle, value); }
+        }
+
         public ICommand ChooseDestPath { get; set; }
         private void ChooseFolder()
         {
             FolderBrowserDialog fbd = new FolderBrowserDialog();
+            if (_fbdTitle != null)
+            {
+                fbd.Description = _fbdTitle;
+            }
+            fbd.SelectedPath = outputFileDirectory;
             if (fbd.ShowDialog() == System.Windows.Forms.DialogResult.OK)
             {
-                SelectedPath = fbd.SelectedPath;
+                //SelectedPath = fbd.SelectedPath;
+                outputFileDirectory = fbd.SelectedPath;
+                selectedPath = Path.Combine(outputFileDirectory, "Clips");
+                hmOutputPath = Path.Combine(outputFileDirectory, "Heatmaps");
             }
         }
 
@@ -536,7 +553,7 @@ namespace RecorderApp.ViewModels
         {
             FileDialogViewModel fd = new FileDialogViewModel();
             fd.Extension = "*.csv";
-            fd.Filter = "(.csv) |*.csv";
+            fd.Filter = "(.csv)|*.csv";
 
             fd.InitialDirectory = outputFileDirectory;
 
@@ -551,6 +568,25 @@ namespace RecorderApp.ViewModels
             this.SelectedFile = fd.FileName;
             Console.WriteLine("Open file");
         }
+        #endregion
+
+        #region save csv file
+
+        private void SaveFile()
+        {
+            FileDialogViewModel sfd = new FileDialogViewModel();
+            sfd.Extension = "*.csv";
+            sfd.Filter = "CSV Files(.csv)|*.csv | All(*.*)|*";
+
+            sfd.InitialDirectory = outputFileDirectory;
+
+            sfd.SaveFileCommand.Execute(null);
+            if (sfd.FileObj.Directory != null)
+            {
+                Console.WriteLine(sfd.FileObj.Directory);
+            }
+        }
+
         #endregion
 
         #region Open Video File
@@ -870,6 +906,16 @@ namespace RecorderApp.ViewModels
         }
 
         #endregion
+
+        // select save directory 
+
+        private void SaveScenes()
+        {
+            //SaveFile();
+            _fbdTitle = "Select Folder to Save CSV Files";
+            ChooseFolder();
+            SelectScenes();
+        }
 
         private async void SelectScenes()
         {

@@ -181,9 +181,9 @@ namespace RecorderApp.ViewModels
             get { return videoSource; }
             set
             {
-                videoSource = value;
-                RaisePropertyChanged("VideoSource");
-                //SetProperty(ref videoSource, value);
+                //videoSource = value;
+                //RaisePropertyChanged("VideoSource");
+                SetProperty(ref videoSource, value);
             }
         }
 

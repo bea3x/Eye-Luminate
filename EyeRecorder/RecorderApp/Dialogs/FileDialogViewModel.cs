@@ -16,6 +16,8 @@ namespace RecorderApp.ViewModels
         public FileDialogViewModel()
         {
             OpenCommand = new RelayCommand(this.OpenFile);
+            OpenMultipleFiles = new RelayCommand(this.OpenFiles);
+            SaveFileCommand = new RelayCommand(this.SaveFile);
         }
 
         public Stream Stream { get; set; }
@@ -26,7 +28,11 @@ namespace RecorderApp.ViewModels
 
         public string FileName { get; set; }
 
+        public List<string> FileNames { get; set; }
+
         public string InitialDirectory { get; set; }
+
+        public FileInfo FileObj { get; set; }
 
         public ICommand OpenCommand { get; set; }
 
@@ -35,5 +41,20 @@ namespace RecorderApp.ViewModels
             IOService ioService = new IOService();
             this.FileName = ioService.OpenFile(this.Extension, this.Filter, this.InitialDirectory);
         }
+
+        public ICommand OpenMultipleFiles { get; set; }
+        private void OpenFiles()
+        {
+            IOService ioService = new IOService();
+            this.FileNames = ioService.OpenFiles(this.Extension, this.Filter, this.InitialDirectory);
+        }
+
+        public ICommand SaveFileCommand { get; set; }
+        private void SaveFile()
+        {
+            IOService ioService = new IOService();
+            this.FileObj = ioService.SaveFile(this.Extension, this.Filter, this.InitialDirectory);
+        }
+
     }
 }

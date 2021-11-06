@@ -48,6 +48,8 @@ namespace RecorderApp
             containerRegistry.Register<IView2, ResultsView>();            
             // goes to QuickResultsView for next command
             containerRegistry.Register<IView3, QuickResultsView>();
+            // goes to QuickResultsView for next command
+            containerRegistry.Register<IView4, MultiUserResView>();
 
             containerRegistry.Register<MainView, MainWindow>();
 
