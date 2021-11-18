@@ -1,4 +1,6 @@
 ﻿using RecorderApp.ViewModels;
+using System;
+using System.ComponentModel;
 using System.Windows;
 
 namespace RecorderApp.Views
@@ -23,10 +25,30 @@ namespace RecorderApp.Views
                 vm.Close += () =>
                 {
                     this.Close();
+                };
+
+                vm.Back += () =>
+                {
+                    CancelEventArgs arg = new CancelEventArgs();
+                    BackToMain(arg);
                     mView.Show();
                 };
 
             }
+        }
+
+        protected void BackToMain(CancelEventArgs e)
+        {
+            this.Visibility = Visibility.Collapsed;
+            e.Cancel = true;
+
+            Console.WriteLine("Baxk To Main");
+        }
+
+        protected override void OnClosing(CancelEventArgs e)
+        {
+            Application.Current.Shutdown();
+
         }
 
         public bool? Open()

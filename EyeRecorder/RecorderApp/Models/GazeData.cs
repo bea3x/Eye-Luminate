@@ -16,6 +16,19 @@ namespace RecorderApp.Models
 
         public GazeData(int gazeX, int gazeY, int time, int timeDiff, double distance, double velocity, string classification, double centroidX, double centroidY)
         {
+            _gazeX = Convert.ToDouble(gazeX);
+            _gazeY = Convert.ToDouble(gazeY);
+            _time = time;
+            _timeDiff = timeDiff;
+            _distance = distance;
+            _velocity = velocity;
+            _classification = classification;
+            _centroidX = centroidX;
+            _centroidY = centroidY;
+        }
+
+        public GazeData(double gazeX, double gazeY, int time, int timeDiff, double distance, double velocity, string classification, double centroidX, double centroidY)
+        {
             _gazeX = gazeX;
             _gazeY = gazeY;
             _time = time;
@@ -26,10 +39,10 @@ namespace RecorderApp.Models
             _centroidX = centroidX;
             _centroidY = centroidY;
         }
-        
-        private int _gazeX;
 
-        public int GazeX
+        private double _gazeX;
+
+        public double GazeX
         {
             get
             {
@@ -42,9 +55,9 @@ namespace RecorderApp.Models
             }
         }
 
-        private int _gazeY;
+        private double _gazeY;
 
-        public int GazeY
+        public double GazeY
         {
             get
             {

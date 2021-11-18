@@ -8,7 +8,7 @@ using System.Linq;
 
 namespace RecorderApp.ViewModels
 {
-    public class IVTViewModel : ResultsViewModel
+    public class IVTViewModel : BindableBase
     {
         public IVTViewModel()
         {
@@ -167,6 +167,27 @@ namespace RecorderApp.ViewModels
             }
 
             return data;
+        }
+
+        public List<GazeData> normalizeCoords(List<GazeData> data, int width, int height)
+        {
+            Console.WriteLine("W: " + width + " H: " + height);
+            List<GazeData> newData = new List<GazeData>();
+            foreach (GazeData row in data)
+            {
+             
+                double gx = row.GazeX / width;
+                double gy = row.GazeY / height;
+
+                double cx = row.CentroidX / width;
+                double cy = row.CentroidY / height;
+
+                GazeData newObj = new GazeData(gx, gy, row.Time, row.TimeDiff, row.Distance, row.Velocity, row.Classification, cx, cy);
+
+                newData.Add(newObj);
+            }
+
+            return newData;
         }
 
 

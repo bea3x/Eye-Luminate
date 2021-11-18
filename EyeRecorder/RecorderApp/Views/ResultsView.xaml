@@ -13,7 +13,31 @@
         <utilities:VisibilityConverter x:Key="VisibilityConverter"/>
         <utilities:StringToURI x:Key="StringToURI"/>
         <utilities:RatingConverter x:Key="RatingConverter"/>
-        <Style x:Key="radioStyle" TargetType="{x:Type RadioButton}" BasedOn="{StaticResource {x:Type ToggleButton}}" />
+        <Style x:Key="radioStyle" TargetType="{x:Type RadioButton}" BasedOn="{StaticResource {x:Type ToggleButton}}">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type RadioButton}">
+                        <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="Transparent"/>
+                    <Setter Property="BorderBrush" Value="AliceBlue"/>
+                    <Setter Property="BorderThickness" Value="1"/>
+                </Trigger>
+                <Trigger Property="IsChecked" Value="True">
+                    <Setter Property="Background" Value="Transparent"/>
+                    <Setter Property="BorderBrush" Value="AliceBlue"/>
+                    <Setter Property="BorderThickness" Value="3"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
     </Window.Resources>
     <ScrollViewer>
         <Grid>
@@ -44,8 +68,27 @@
                     <ImageBrush ImageSource="/Assets/resBG.png"/>
                 </StackPanel.Background>
 
-                <Label Content="Select CSV" Foreground="White"/>
-                <Rectangle/>
+                <WrapPanel VerticalAlignment="Center">
+                    <Button Command="{Binding BackCommand}" Width="30" Height="30" VerticalAlignment="Center" Margin="30,20,0,0" Foreground="White" Background="#FF72C480">
+                        <Button.Resources>
+                            <Style TargetType="Border">
+                                <Setter Property="CornerRadius" Value="50"/>
+                            </Style>
+                        </Button.Resources>
+
+                        <fa:ImageAwesome Icon="ArrowLeft" Height="22" Width="12" Foreground="AliceBlue" VerticalAlignment="Center"/>
+                    </Button>
+
+
+                    <WrapPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="105,10,0,0">
+                        <Label Content="Select CSV" Foreground="White"/>
+                        <Rectangle/>
+                    </WrapPanel>
+                </WrapPanel>
+
+                
+                
+                
                 <TextBlock x:Name="txtSelectedFile" Width="450" >
                 <Run Text="{Binding SelectedFile}" FontStyle="Italic" FontSize="9"/>
                 </TextBlock>
@@ -75,6 +118,7 @@
                     </Button.Resources>
                     Perform IVT
                 </Button>
+                <!-- 
                 <Button x:Name="btn_test" Command="{Binding GroupFixations}" Foreground="White" Background="#FF72C480">
                     <Button.Resources>
                         <Style TargetType="Border">
@@ -83,6 +127,7 @@
                     </Button.Resources>
                     Group Fixations
                 </Button>
+                -->
 
                 <Label Content="Scene Selection" Foreground="White"/>
                 <Rectangle/>
@@ -131,15 +176,6 @@
                 </TextBlock>
                 
                 
-                <Button x:Name="btn_back" Command="{Binding BackCommand}" 
-                        Margin="0,50" Width="150" Background="#FF72C480" FontFamily="Segoe UI Semibold" Foreground="White">
-                    <Button.Resources>
-                        <Style TargetType="Border">
-                            <Setter Property="CornerRadius" Value="5"/>
-                        </Style>
-                    </Button.Resources>
-                    Back to Main Menu
-                </Button>
 
 
                 <!-- Preview all scenes (Merged clip) + Generate Heatmap button -->
@@ -190,19 +226,19 @@
                                             </ItemsPanelTemplate>
                                         </ListBox.ItemsPanel>
                                         <RadioButton GroupName="{Binding ElementName=clipEl, Path=Source}" Style="{StaticResource radioStyle}" Height="30" Width="40"
-                                                     IsChecked="{Binding rating, Converter={StaticResource RatingConverter}, ConverterParameter=1}" 
-                                                     Background="Transparent" BorderThickness="0">
-                                            <Image Source="/RecorderApp;component/Assets/happy.png"/>
+                                                     IsChecked="{Binding rating, Converter={StaticResource RatingConverter}, ConverterParameter=1}">
+                                            <!--<Image Source="/RecorderApp;component/Assets/happy.png"/>-->
+                                            <fa:ImageAwesome Icon="SmileOutline" Height="16" Width="16" Foreground="AliceBlue" VerticalAlignment="Center"/>
                                         </RadioButton>
                                         <RadioButton GroupName="{Binding ElementName=clipEl, Path=Source}" Style="{StaticResource radioStyle}" Height="30" Width="40"
-                                                     IsChecked="{Binding rating, Converter={StaticResource RatingConverter}, ConverterParameter=2}" 
-                                                     Background="Transparent" BorderThickness="0">
-                                            <Image Source="/RecorderApp;component/Assets/neutral.png"/>
+                                                     IsChecked="{Binding rating, Converter={StaticResource RatingConverter}, ConverterParameter=2}" >
+                                            <!--<Image Source="/RecorderApp;component/Assets/neutral.png"/>-->
+                                            <fa:ImageAwesome Icon="MehOutline" Height="16" Width="16" Foreground="AliceBlue" VerticalAlignment="Center"/>
                                         </RadioButton>
                                         <RadioButton GroupName="{Binding ElementName=clipEl, Path=Source}" Style="{StaticResource radioStyle}" Height="30" Width="40"
-                                                     IsChecked="{Binding rating, Converter={StaticResource RatingConverter}, ConverterParameter=3}" 
-                                                     Background="Transparent" BorderThickness="0">
-                                            <Image Source="/RecorderApp;component/Assets/sad.png"/>
+                                                     IsChecked="{Binding rating, Converter={StaticResource RatingConverter}, ConverterParameter=3}" >
+                                            <!--<Image Source="/RecorderApp;component/Assets/sad.png"/>-->
+                                            <fa:ImageAwesome Icon="FrownOutline" Height="16" Width="16" Foreground="AliceBlue" VerticalAlignment="Center"/>
                                         </RadioButton>
                                     </ListBox>
                                 </Grid>
@@ -216,6 +252,7 @@
                             </ControlTemplate>
                         </ItemsControl.Template>
                     </ItemsControl>
+
 
 
                     <Button Command="{Binding SubmitRateCommand}" Margin="10,10,10,30"

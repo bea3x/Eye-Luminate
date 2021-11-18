@@ -16,6 +16,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
+using System.ComponentModel;
 
 namespace RecorderApp.Views
 {
@@ -25,11 +26,11 @@ namespace RecorderApp.Views
     public partial class ResultsView : Window, IView2
     {
 
-        ResultsViewModel resVm = new ResultsViewModel();
+        //ResultsViewModel resVm = new ResultsViewModel();
         public ResultsView()
         {
             InitializeComponent();
-            this.DataContext = resVm;
+            //this.DataContext = resVm;
 
             Loaded += ResultsView_Loaded;
         }
@@ -45,12 +46,30 @@ namespace RecorderApp.Views
                 vm.Close += () =>
                 {
                     this.Close();
+                };
+
+                vm.Back += () =>
+                {
+                    CancelEventArgs arg = new CancelEventArgs();
+                    BackToMain(arg);
                     mainView.Show();
                 };
 
             }
         }
+        protected void BackToMain(CancelEventArgs e)
+        {
+            this.Visibility = Visibility.Collapsed;
+            e.Cancel = true;
 
+            Console.WriteLine("Baxk To Main");
+        }
+
+        protected override void OnClosing(CancelEventArgs e)
+        {
+            Application.Current.Shutdown();
+
+        }
 
         #region Show New Window Methods
         public bool? OpenRes()

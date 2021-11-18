@@ -16,48 +16,64 @@ namespace RecorderApp.Views
         {
             InitializeComponent(); 
 
-            Loaded += MainWindow_Loaded; 
+            Loaded += MainWindow_Loaded;
         }
 
-        
 
+
+        
         /// <summary>
         /// closes window when nextcommand is invoked
         /// </summary>
         private void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
+            Console.WriteLine("MainWindow Loaded");
             if (DataContext is IControlWindows vm)
             {
                 vm.Next += () =>
                 {
-                    this.Close();
+
+                    //this.Close();
+                    this.Visibility = Visibility.Collapsed;
+                    Console.WriteLine("vm.Next +=");
                 };
 
+                vm.Close += () =>
+                {
+                    Console.WriteLine("vm.Close +=");
+                };
+
+
+                
             }
 
         }
-
 
         public bool? Open()
         {
             return this.ShowDialog();
         }
+        
 
         protected override void OnClosing(CancelEventArgs e)
         {
             this.Visibility = Visibility.Collapsed;
             e.Cancel = true;
+
+            Application.Current.Shutdown();
+            Console.WriteLine("OnClosing");
         }
 
+        
     }
-
+    
     public interface MainView
     {
 
         bool? Open();
     }
 
-
+    
 
 
 }

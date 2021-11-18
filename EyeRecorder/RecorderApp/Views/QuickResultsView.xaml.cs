@@ -3,6 +3,7 @@ using RecorderApp.Utility;
 using RecorderApp.ViewModels;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -49,7 +50,27 @@ namespace RecorderApp.Views
                     mView.Show();
                 };
 
+                vm.Back += () =>
+                {
+                    CancelEventArgs arg = new CancelEventArgs();
+                    BackToMain(arg);
+                    mView.Show();
+                };
             }
+        }
+
+        protected void BackToMain(CancelEventArgs e)
+        {
+            this.Visibility = Visibility.Collapsed;
+            e.Cancel = true;
+
+            Console.WriteLine("Baxk To Main");
+        }
+
+        protected override void OnClosing(CancelEventArgs e)
+        {
+            Application.Current.Shutdown();
+
         }
 
         #region Show New Window Methods
@@ -92,6 +113,7 @@ namespace RecorderApp.Views
             //VidPlayer.Visibility = Visibility.Visible;
         }
 
+        #region Mouse behavior
         private void clipEl_MouseEnter(object sender, MouseEventArgs e)
         {
             //Console.WriteLine("enteresd");
@@ -157,6 +179,7 @@ namespace RecorderApp.Views
             clip.Pause();
         }
 
+        #endregion
     }
 
 

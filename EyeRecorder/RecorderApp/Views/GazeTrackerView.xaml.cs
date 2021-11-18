@@ -17,6 +17,7 @@ namespace RecorderApp.Views
     /// </summary>
     public partial class GazeTrackerView : Window, IView
     {
+
         IEventAggregator _ea;
         public GazeTrackerView(IEventAggregator ea)
         {
@@ -30,6 +31,7 @@ namespace RecorderApp.Views
             timer.Start();
             //Loaded += GazeTrackerView_Loaded;
             Loaded += GazeTrackerViewModel_Loaded;
+
         }
 
         private void GazeTrackerViewModel_Loaded(object sender, RoutedEventArgs e)
@@ -37,6 +39,11 @@ namespace RecorderApp.Views
             if (DataContext is IControlWindows vm)
             {
                 vm.Next += () =>
+                {
+                    this.Close();
+                };
+
+                vm.Close += () =>
                 {
                     this.Close();
                 };
@@ -61,10 +68,13 @@ namespace RecorderApp.Views
             return this.ShowDialog();
         }
 
+
         protected override void OnClosing(CancelEventArgs e)
         {
-            this.Visibility = Visibility.Collapsed;
+            //this.Visibility = Visibility.Collapsed;
             e.Cancel = true;
+            Application.Current.Shutdown();
+            //base.OnClosed(e);
         }
         #endregion
 
@@ -76,19 +86,6 @@ namespace RecorderApp.Views
 
         private void videoWindow_MediaEnded(object sender, RoutedEventArgs e)
         {
-            /*
-            this.Close();
-
-            gazeVm.Dispose();
-            //MainWindow menuVm = new MainWindow();
-            //menuVm.Show();
-
-            QuickResultsView resView = new QuickResultsView();
-            resView.Show();
-            */
-            // insert generate result
-            //ResultsView newVm = new ResultsView();
-            //newVm.Show();
             SendMediaStatus(true);
         }
 

@@ -113,15 +113,15 @@ def _example_random_points():
 
 class GazeData:
     def __init__(self, gazeX, gazeY, time, time_diff=0, distance=0, velocity=0, classification='', centroid_x=0, centroid_y=0):
-        self.gazeX = gazeX
-        self.gazeY = gazeY
-        self.time = time
-        self.time_diff = time_diff
+        self.gazeX = float(gazeX)  
+        self.gazeY = float(gazeY)
+        self.time = int(time)
+        self.time_diff = int(time_diff)
         self.distance = distance
         self.velocity = velocity
         self.classification = classification
-        self.centroid_x = centroid_x
-        self.centroid_y = centroid_y 
+        self.centroid_x = float(centroid_x)
+        self.centroid_y = float(centroid_y)
 
 
 def readFile(filename):
@@ -132,7 +132,7 @@ def readFile(filename):
         next(reader, None) #skip header lines
 
         for gazeX, gazeY, time, time_diff, distance, velocity, classification, centroid_x, centroid_y in reader:
-            gazeData.append(GazeData(int(gazeX), int(gazeY), int(time), int(time_diff), distance, velocity, classification, float(centroid_x), float(centroid_y))) 
+            gazeData.append(GazeData(gazeX, gazeY, time, time_diff, distance, velocity, classification, centroid_x, centroid_y)) 
 
     return gazeData
 
@@ -141,40 +141,68 @@ def readFile(filename):
 def subList(data):
     lst = []
     for x in data:
-        lst.append([x.centroid_x, x.centroid_y, x.time])
-        #lst.append([x.gazeX, x.gazeY, x.time])
+        #lst.append([x.centroid_x, x.centroid_y, x.time])
+        lst.append([x.gazeX, x.gazeY, x.time])
 
 
     tuples = [tuple(x) for x in lst]
     return tuples
 
 
-def drawHeatmap(data, vidPath, filename):
-    filename = filename + ".mp4"
+def drawHeatmap(data, vidPath, destPath, vidFileName):
+    filename = vidFileName
     vid=vidPath
 
     clip = VideoFileClip(vidPath)
+    clip = clip.resize(newsize=(resWidth,resHeight))
+    tempFile = "temp.mp4"
+    tempDir = os.path.join(destPath, tempFile)
+    clip.write_videofile(tempDir)
     img_heatmapper = Heatmapper()
     video_heatmapper = VideoHeatmapper(img_heatmapper)
 
     heatmap_video = video_heatmapper.heatmap_on_video_path(
-        video_path=vid,
+        video_path=tempDir,
         points=gPoints
      )
+
     fp = os.path.join(destPath,filename)
     heatmap_video.write_videofile(fp, bitrate="5000k", fps=24)
+    
+    os.remove(tempDir)
 
 
+def convert(data):
+
+    convData = []
+    for x in data:
+        gx = round((x.gazeX * resWidth),4)
+        gy = round((x.gazeY * resHeight),4)
+
+        cx = round((x.centroid_x * resWidth),4)
+        cy = round((x.centroid_y * resHeight),4)
+        #print('new gx: ', gx, 'new gy: ', gy, 'new cx: ', cx, 'new cy: ', cy)
+
+        convData.append(GazeData(gx,gy,x.time,x.time_diff,x.distance,x.velocity,x.classification,cx, cy))
+
+    return convData
+
+resWidth = 852
+resHeight = 480
+
+newFn = ""
 if __name__ == "__main__":
     
     filename = sys.argv[1]
     vidPath = sys.argv[2]
-    destPath = sys.argv[3]
-    
+    vidFileName = sys.argv[3]
+    destPath = sys.argv[4]
+
     fixData = readFile(filename)
+    convData = convert(fixData)
     newFn = filename.rstrip('.csv')
 
-    gPoints = subList(fixData)
+    gPoints = subList(convData)
     
-    drawHeatmap(gPoints, vidPath, newFn+"_hm")
+    drawHeatmap(gPoints, vidPath, destPath, vidFileName)
 

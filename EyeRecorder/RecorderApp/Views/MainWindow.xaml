@@ -4,7 +4,7 @@
         xmlns:prism="http://prismlibrary.com/" 
         prism:ViewModelLocator.AutoWireViewModel="True"
         Title="{Binding Title}" Height="550" Width="655"
-        WindowStartupLocation="CenterScreen">
+        WindowStartupLocation="CenterScreen" >
 
     <Grid>
         <Grid.ColumnDefinitions>
@@ -34,6 +34,18 @@
             
             <Label Content="Eyegaze Recorder" Margin="5,10,0,5" Height="30" VerticalAlignment="Top"/>
             -->
+
+            <Label Content="Calibrate Device" Width="400" Foreground="White"/>
+            <Rectangle Fill="#FFD0CFCF" Width="450" Height="1"/>
+            <Button Command="{Binding CalibrateWindow}" FontFamily="Segoe UI Semibold" FontWeight="Bold" Foreground="White" Background="#FF72C480" BorderBrush="#FFE0E3EB" Content="Start calibration">
+                <Button.Resources>
+                    <Style TargetType="Border">
+                        <Setter Property="CornerRadius" Value="5"/>
+                    </Style>
+                </Button.Resources>
+            </Button>
+
+
             <Label Content="Start Experiment" Width="400" Foreground="White"/>
             <Rectangle Fill="#FFD0CFCF" Width="450" Height="1"/>
 
@@ -57,15 +69,7 @@
                 </Button.Resources>
             </Button>
 
-            <Label Content="Calibrate Device" Width="400" Foreground="White"/>
-            <Rectangle Fill="#FFD0CFCF" Width="450" Height="1"/>
-            <Button Command="{Binding CalibrateWindow}" FontFamily="Segoe UI Semibold" FontWeight="Bold" Foreground="White" Background="#FF72C480" BorderBrush="#FFE0E3EB" Content="Start calibration">
-                <Button.Resources>
-                    <Style TargetType="Border">
-                        <Setter Property="CornerRadius" Value="5"/>
-                    </Style>
-                </Button.Resources>
-            </Button>
+            
 
 
             <Label Content="Generate Results" Width="400" Foreground="White"/>

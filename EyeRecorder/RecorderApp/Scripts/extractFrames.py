@@ -41,7 +41,7 @@ class VideoClip:
         self.rateValue = rateValue
 
 
-# * read data from finalGazeData
+# * read data from fixationgrps
 def readFile(filename):
     readList = []
     with open(filename) as csv_file:

@@ -1,6 +1,7 @@
 ﻿using CsvHelper;
 using Prism.Commands;
 using Prism.Mvvm;
+using Prism.Services.Dialogs;
 using RecorderApp.Models;
 using RecorderApp.Utility;
 using RecorderApp.Views;
@@ -21,8 +22,10 @@ namespace RecorderApp.ViewModels
     {
         string exeRuntimeDirectory;
         string outputFileDirectory;
-        public ResultsViewModel()
+        IDialogService _dialogService;
+        public ResultsViewModel(IDialogService dialogService)
         {
+            _dialogService = dialogService;
             // initialize bindings to buttons from view
             this.OpenCommand = new RelayCommand(this.OpenFile);
 
@@ -86,6 +89,8 @@ namespace RecorderApp.ViewModels
 
             this.SelectedFile = fd.FileName;
         }
+
+
         #endregion
 
         #region Open Video File
@@ -134,6 +139,39 @@ namespace RecorderApp.ViewModels
         }
 
 
+        #endregion
+
+        #region Error Dialog 
+        private void ShowDialog(string dialogMessage, bool error)
+        {
+            var p = new DialogParameters();
+            p.Add("message", dialogMessage);
+            p.Add("error", error);
+
+            _dialogService.ShowDialog("MessageDialog", p, result =>
+            {
+                if (result.Result == ButtonResult.OK)
+                {
+
+
+                }
+            });
+        }
+
+        private void ShowNDialog(string dialogMessage, string path)
+        {
+            var p = new DialogParameters();
+            p.Add("message", dialogMessage);
+            p.Add("path", path);
+
+            _dialogService.ShowDialog("NotifDialog", p, result =>
+            {
+                if (result.Result == ButtonResult.OK)
+                {
+
+                }
+            });
+        }
         #endregion
 
         #region Read/Write CSV
@@ -219,6 +257,7 @@ namespace RecorderApp.ViewModels
 
             writeFile(finalGazeData, "finalGazeData");
             Console.WriteLine(finalGazeData.Count);
+            ShowNDialog("CSV file successfully written!", outputFileDirectory);
         }
 
         #endregion
@@ -259,7 +298,14 @@ namespace RecorderApp.ViewModels
 
         private async Task extractFrames()
         {
-            string scriptPath = "../../../../Scripts/extractFrames.py";
+            //string scriptPath = "../../../../Scripts/extractFrames.py";
+
+            string currentDir = Directory.GetCurrentDirectory();
+            var gparent = Directory.GetParent(currentDir).Parent.Parent;
+            //string parentFolder = Path.Combine(currentDir, @"..\..\..");
+            Console.WriteLine("parent folder: " + gparent.FullName);
+            //string scriptPath = Path.Combine(gparent.FullName, @"Scripts\extractFrames.py");
+            string scriptPath = Path.Combine(gparent.FullName, @"Scripts\extractScenes.py");
 
             //TODO: change ui so separate csv file for scene selection and ivt+data processing
             string csvFile = Path.GetFileName(selectedFile);
@@ -274,7 +320,7 @@ namespace RecorderApp.ViewModels
         private async Task LoadClips()
         {
             //TODO: modify and make not brute-force
-            string filename = "selectedClipInfo.csv";
+            string filename = "_selectedClipInfo.csv";
             string infoDir = Path.Combine(outputFileDirectory, filename);
             Console.WriteLine(infoDir);
             if (File.Exists(infoDir))
@@ -286,10 +332,14 @@ namespace RecorderApp.ViewModels
 
         private async void getFrames()
         {
-            inProcess(true);
-            Output = "Extracting Scenes...";
-            await extractFrames();
-            await LoadClips();
+            if (checkFields())
+            {
+
+                inProcess(true);
+                Output = "Extracting Scenes...";
+                await extractFrames();
+                await LoadClips();
+            }
         }
 
 
@@ -300,7 +350,7 @@ namespace RecorderApp.ViewModels
         {
 
             Process p = new Process();
-            p.StartInfo = new ProcessStartInfo(@"C:\Python37\python.exe", pythonScript + " " + args)
+            p.StartInfo = new ProcessStartInfo(exeRuntimeDirectory + @"\..\pyenv\python.exe", pythonScript + " " + args)
             {
                 RedirectStandardOutput = true,
                 UseShellExecute = false,
@@ -345,26 +395,95 @@ namespace RecorderApp.ViewModels
 
         private DelegateCommand _backCommand;
         public DelegateCommand BackCommand =>
-            _backCommand ?? (_backCommand = new DelegateCommand(CloseWindow));
+            _backCommand ?? (_backCommand = new DelegateCommand(GoBack));
 
         void CloseWindow()
         {
             Close?.Invoke();
         }
 
+        void GoBack()
+        {
+            Back?.Invoke();
+        }
+
         public Action Close { get; set; }
 
-        public Action Next { get; set; }
+        public Action Back { get; set; }
 
+        public Action Next { get; set; }
         #endregion
 
         #region Binding for Rating
 
         public ICommand SubmitRateCommand { get; set; }
+        private string SaveCSVDialog()
+        {
+            FileDialogViewModel sfd = new FileDialogViewModel();
+            sfd.Extension = "*.csv";
+            sfd.Filter = "CSV File(.csv)|*.csv | All(*.*)|*";
 
-        void SaveRating()
+            sfd.InitialDirectory = outputFileDirectory;
+            sfd.SaveFileCommand.Execute(null);
+            if (sfd.FileObj != null)
+            {
+                outputFileDirectory = sfd.FileObj.DirectoryName;
+                if (sfd.FileObj.Name != null)
+                {
+                    return sfd.FileObj.Name;
+                }
+                else
+                {
+                    return "userClipData";
+                }
+            }
+            else
+                return null;
+
+        }
+
+        async void SaveRating()
         {
 
+            string fn = SaveCSVDialog();
+
+            if (fn != null && SelectedVid != null)
+            {
+                List<VideoClip> UserClipData = await submitRating();
+
+                if (UserClipData != null)
+                {
+                    if (!uncheckedExists())
+                    {
+                        writeFile(UserClipData, fn);
+                        Console.WriteLine(fn + " created!");
+                        var msg = fn + " created!";
+                        ShowNDialog(msg, outputFileDirectory);
+                    }
+                    else
+                    {
+                        var msg = "Please rate all scenes.";
+                        ShowDialog(msg, true);
+                    }
+                }
+            }
+
+        }
+
+        private bool uncheckedExists()
+        {
+            foreach (VideoClip clip in ClipData)
+            {
+                Console.WriteLine(clip.fileName + " " + clip.rating + " " + getRateValue(clip.rating));
+                if (clip.rating == -1)
+                    return true;
+            }
+
+            return false;
+        }
+
+        private async Task<List<VideoClip>> submitRating()
+        {
             List<VideoClip> UserClipData = new List<VideoClip>();
 
             foreach (VideoClip clip in ClipData)
@@ -372,11 +491,10 @@ namespace RecorderApp.ViewModels
 
                 Console.WriteLine(clip.fileName + " " + clip.rating + " " + getRateValue(clip.rating));
                 clip.rateValue = getRateValue(clip.rating);
-                UserClipData.Add(clip);
+                await Task.Run(() => UserClipData.Add(clip));
 
             }
-            writeFile(UserClipData, "userClipData");
-            //Console.WriteLine(newFile + " created!");
+            return UserClipData;
         }
 
         string getRateValue(int rateIndex)
@@ -393,7 +511,6 @@ namespace RecorderApp.ViewModels
                     return "";
             }
         }
-
 
         #endregion
 
@@ -475,14 +592,23 @@ namespace RecorderApp.ViewModels
         private void ChooseFolder()
         {
             FolderBrowserDialog fbd = new FolderBrowserDialog();
-            if (fbd.ShowDialog() == DialogResult.OK)
+            if (fbd.ShowDialog() == System.Windows.Forms.DialogResult.OK)
             {
                 SelectedPath = fbd.SelectedPath;
+                if (SelectedFile != null)
+                {
+                    string fn = Path.GetFileNameWithoutExtension(SelectedPath);
+                    fn.Replace("_finalGazeData", "");
+                    selectedPath = Path.Combine(outputFileDirectory, "Clips", fn);
+                }
             }
         }
 
         #endregion
 
+        #region new additions from quick mode
+
+        #endregion
 
 
         #region Save Heatmaps
@@ -501,7 +627,11 @@ namespace RecorderApp.ViewModels
 
         private async Task saveHeatmap()
         {
-            string scriptPath = "../../../../Scripts/getHeatmap.py";
+            //string scriptPath = "../../../../Scripts/getHeatmap.py";
+
+            string currentDir = Directory.GetCurrentDirectory();
+            var gparent = Directory.GetParent(currentDir).Parent.Parent;
+            string scriptPath = Path.Combine(gparent.FullName, @"Scripts\getHeatmap.py");
 
             //string selectedFn = selectedCSV.FullName.Replace("_selectedInfo.csv", "");
             //string fn = Path.GetFileNameWithoutExtension(selectedFn) + "_fixations.csv";
@@ -524,12 +654,14 @@ namespace RecorderApp.ViewModels
 
                 string csvFile = Path.GetFileName(selectedFile);
                 string vidPath = selectedVid;
-                string args = csvFile + " " + '"' + vidPath + '"';
+                string args = csvFile + " " + '"' + vidPath + '"' + " " + "heatmap.mp4";
                 //runScript(scriptPath, args, destPath);
                 Console.WriteLine("chosen args: " + args);
                 await Task.Run(() => runScript(scriptPath, args, hmOutputPath));
             }
 
+            var msg = "Generating clip with fixation map...Done";
+            ShowNDialog(msg, hmOutputPath);
         }
 
         #endregion
@@ -601,6 +733,7 @@ namespace RecorderApp.ViewModels
                     }
                     else
                     {
+                        obj.timeStamp = obj.GetTimestamp();
                         clipData.Add(obj);
                     }
                 });
@@ -614,6 +747,38 @@ namespace RecorderApp.ViewModels
         }
 
         #endregion
+        private bool checkFields()
+        {
+            if (numScenes != null)
+            {
+                var isNumeric = int.TryParse(numScenes, out int n);
+
+                if (n <= 0 || n > 20)
+                {
+                    ShowDialog("Invalid number of scenes entered. Please try again", true);
+                    return false;
+                }
+
+            }
+            else
+            {
+                ShowDialog("Number of scenes cannot be empty.", true);
+                return false;
+            }
+
+            if (selectedFile == null)
+            {
+                ShowDialog("No selected csv file", true);
+                return false;
+            }
+            else if (selectedVid == null || selectedVid == "")
+            {
+                ShowDialog("No selected video file", true);
+                return false;
+            }
+
+            return true;
+        }
 
         #region loading circle bind
         private bool _isProcessing;

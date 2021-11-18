@@ -33,6 +33,7 @@ namespace RecorderApp.ViewModels
         public IView _view;
         public IView2 _view2;
         public IView3 _view3;
+
         public GazeTrackerViewModel(IEventAggregator ea, IView3 view3)
         {
             IsTrackingGaze = false;
@@ -47,6 +48,8 @@ namespace RecorderApp.ViewModels
 
             // Register event listener for gaze tracking status
             _eyeXHost.GazeTrackingChanged += EyeXHost_GazeTrackingChanged;
+
+
 
             // start eyeX host
             _eyeXHost.Start();
@@ -81,7 +84,7 @@ namespace RecorderApp.ViewModels
         }
         private void GetTrackingStatus(bool started)
         {
-            if (started)
+            if (started && videoSource != null)
             {
                 startTracking();
             }
@@ -104,6 +107,7 @@ namespace RecorderApp.ViewModels
 
             // filename with filename of clip and timestamp of recording
             String timeStamp = DateTime.Now.ToString("yyyyMMdd-HHmmss");
+            //if (videoSource.ToString() != null)
             string clipName = Path.GetFileName(videoSource.ToString());
 
             int dotPos = clipName.IndexOf(".");
@@ -135,7 +139,6 @@ namespace RecorderApp.ViewModels
         {
             //_eyeXHost.LaunchGuestCalibration();
             //_eyeXHost.LaunchCalibrationTesting();
-            Console.WriteLine("tobii gumana ka na pls");
             _eyeXHost.LaunchRecalibration();
 
         }
@@ -227,7 +230,7 @@ namespace RecorderApp.ViewModels
         /// <summary>
         /// bind to view element in GazeTrackerView.xaml & gaze data model 
         /// </summary>
-        public int GazeX
+        public double GazeX
         {
             get
             {
@@ -240,7 +243,7 @@ namespace RecorderApp.ViewModels
             }
         }
 
-        public int GazeY
+        public double GazeY
         {
             get
             {
@@ -311,14 +314,6 @@ namespace RecorderApp.ViewModels
 
 
         #region IsTrackingGaze + IsUserPresent
-
-        private string _recordingText;
-
-        public string RecordingText
-        {
-            get { return _recordingText; }
-            //set { _recordingText = value; }
-        }
 
 
         /// <summary>
@@ -440,6 +435,7 @@ namespace RecorderApp.ViewModels
 
         public Action Close { get; set; }
 
+        public Action Back { get; set; }
         public Action Next { get; set; }
 
         #endregion

@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Threading;
 using System;
 using RecorderApp.Dialogs;
+using DryIoc;
 
 namespace RecorderApp
 {
@@ -56,7 +57,27 @@ namespace RecorderApp
             // message dialog
             containerRegistry.RegisterDialog<MessageDialog, MessageDialogViewModel>();
 
+            //notif dialog
+            containerRegistry.RegisterDialog<NotifDialog, NotifDialogViewModel>();
+
+
+            containerRegistry.RegisterDialog<RateChartView, RateChartViewModel>();
+            containerRegistry.RegisterDialog<ChartView, ChartViewModel>();
+
         }
-        
+
+        private void Application_Exit(object sender, ExitEventArgs e)
+        {
+            Application.Current.Shutdown();
+            Console.WriteLine("Application_Exit");
+        }
+
+        protected override void OnExit(ExitEventArgs e)
+        {
+            base.OnExit(e);
+            Console.WriteLine("OnExit");
+        }
+
+
     }
 }

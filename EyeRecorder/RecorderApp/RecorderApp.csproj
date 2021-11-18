@@ -58,6 +58,26 @@
   <PropertyGroup>
     <ApplicationIcon>favicon.ico</ApplicationIcon>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\x64\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x64</PlatformTarget>
+    <LangVersion>7.3</LangVersion>
+    <ErrorReport>prompt</ErrorReport>
+    <Prefer32Bit>true</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
+    <OutputPath>bin\x64\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>x64</PlatformTarget>
+    <LangVersion>7.3</LangVersion>
+    <ErrorReport>prompt</ErrorReport>
+    <Prefer32Bit>true</Prefer32Bit>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="EyeXFramework">
       <HintPath>..\..\lib\x86\EyeXFramework.dll</HintPath>
@@ -86,13 +106,27 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Dialogs\ChartView.xaml.cs">
+      <DependentUpon>ChartView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Dialogs\ChartViewModel.cs" />
     <Compile Include="Dialogs\MessageDialog.xaml.cs">
       <DependentUpon>MessageDialog.xaml</DependentUpon>
     </Compile>
     <Compile Include="Dialogs\MessageDialogViewModel.cs" />
+    <Compile Include="Dialogs\NotifDialog.xaml.cs">
+      <DependentUpon>NotifDialog.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Dialogs\NotifDialogViewModel.cs" />
+    <Compile Include="Dialogs\RateChartView.xaml.cs">
+      <DependentUpon>RateChartView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Dialogs\RateChartViewModel.cs" />
     <Compile Include="Models\Fixation.cs" />
+    <Compile Include="Models\RatingAnalysis.cs" />
     <Compile Include="Models\RatingSummary.cs" />
     <Compile Include="Models\RawGaze.cs" />
+    <Compile Include="Models\Variability.cs" />
     <Compile Include="Models\VideoClip.cs" />
     <Compile Include="Utility\CalibrationEvent.cs" />
     <Compile Include="Utility\FilenameConverter.cs" />
@@ -102,11 +136,11 @@
     <Compile Include="Utility\MediaWatchEvent.cs" />
     <Compile Include="Utility\RatingConverter.cs" />
     <Compile Include="Utility\RecStatusEvent.cs" />
+    <Compile Include="Utility\SaveFileName.cs" />
     <Compile Include="Utility\SavePathEvent.cs" />
     <Compile Include="Utility\StringToURI.cs" />
     <Compile Include="Utility\TimeWatchEvent.cs" />
     <Compile Include="Utility\VisibilityConverter.cs" />
-    <Compile Include="ViewModels\CalibrationViewViewModel.cs" />
     <Compile Include="ViewModels\CleanDataViewModel.cs" />
     <Compile Include="ViewModels\DynamicGridViewModel.cs" />
     <Compile Include="ViewModels\IVTViewModel.cs" />
@@ -122,7 +156,19 @@
     <Compile Include="Views\ResultsView.xaml.cs">
       <DependentUpon>ResultsView.xaml</DependentUpon>
     </Compile>
+    <Page Include="Dialogs\ChartView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Dialogs\MessageDialog.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Dialogs\NotifDialog.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Dialogs\RateChartView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -139,7 +185,6 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Models\GazeData.cs" />
-    <Compile Include="Models\GazeDataService.cs" />
     <Compile Include="Dialogs\IOService.cs" />
     <Compile Include="Utility\RelayCommand.cs" />
     <Compile Include="Utility\YesNoConverter.cs" />
@@ -203,6 +248,12 @@
     <PackageReference Include="NReco.VideoInfo">
       <Version>1.1.1</Version>
     </PackageReference>
+    <PackageReference Include="OxyPlot.Core">
+      <Version>2.1.0</Version>
+    </PackageReference>
+    <PackageReference Include="OxyPlot.Wpf">
+      <Version>2.1.0</Version>
+    </PackageReference>
     <PackageReference Include="Prism.Core">
       <Version>8.1.97</Version>
     </PackageReference>
@@ -211,6 +262,15 @@
     </PackageReference>
     <PackageReference Include="Prism.Wpf">
       <Version>8.1.97</Version>
+    </PackageReference>
+    <PackageReference Include="python">
+      <Version>3.7.6</Version>
+    </PackageReference>
+    <PackageReference Include="System.Runtime">
+      <Version>4.3.1</Version>
+    </PackageReference>
+    <PackageReference Include="System.Runtime.Extensions">
+      <Version>4.3.1</Version>
     </PackageReference>
     <PackageReference Include="WindowsAPICodePack-Shell">
       <Version>1.1.1</Version>
@@ -235,6 +295,8 @@
     <Content Include="Scripts\groupFixations.py" />
     <Content Include="Tobii.EyeX.Client.dll" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <WCFMetadata Include="Connected Services\" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

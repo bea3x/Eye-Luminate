@@ -25,6 +25,20 @@ namespace RecorderApp.Dialogs
             set { SetProperty(ref _message, value); }
         }
 
+        private bool _errorIcon;
+        public bool ErrorIcon
+        {
+            get { return _errorIcon; }
+            set { SetProperty(ref _errorIcon, value); }
+        }
+
+        private bool _notifIcon;
+        public bool NotifIcon
+        {
+            get { return _notifIcon; }
+            set { SetProperty(ref _notifIcon, value); }
+        }
+
         public DelegateCommand CloseDialogCommand { get; }
 
         public bool CanCloseDialog()
@@ -45,6 +59,23 @@ namespace RecorderApp.Dialogs
         public void OnDialogOpened(IDialogParameters parameters)
         {
             Message = parameters.GetValue<string>("message");
+            bool isError = parameters.GetValue<bool>("error");
+            changeIcon(isError);
+            
+        }
+
+        private void changeIcon(bool isError)
+        {
+            if (isError)
+            {
+                ErrorIcon = true;
+                NotifIcon = false;
+            }
+            else
+            {
+                NotifIcon = true;
+                ErrorIcon = false;
+            }
         }
     }
 }

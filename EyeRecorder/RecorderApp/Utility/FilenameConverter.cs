@@ -29,16 +29,31 @@ namespace RecorderApp.Utility
 
         public string getName(string fullfn, int separator)
         {
-            return fullfn.Substring(0, separator);
+            try
+            {
+                return fullfn.Substring(0, separator);
+            }
+            catch
+            {
+                return fullfn;
+            }
         }
 
         public string getDate(string fullfn, int separator)
         {
             // substring date part
-            string date = fullfn.Substring(++separator, fullfn.Length - separator);
-            //remove extension
-            date = date.Remove(date.Length - 4, 4);
-            return date;
+            try
+            {
+                string date = fullfn.Substring(++separator, fullfn.Length - separator);
+                //remove extension
+                date = date.Remove(date.Length - 4, 4);
+                return date;
+
+            }
+            catch
+            {
+                return "";
+            }
         }
         public string dateTimeConvert(string dt)
         {

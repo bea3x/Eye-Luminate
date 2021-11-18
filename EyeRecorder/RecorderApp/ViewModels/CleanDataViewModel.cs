@@ -15,7 +15,7 @@ using System.Windows.Input;
 
 namespace RecorderApp.ViewModels
 {
-    public class CleanDataViewModel : ResultsViewModel
+    public class CleanDataViewModel : BindableBase
     {
         public CleanDataViewModel()
         {

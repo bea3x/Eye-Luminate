@@ -1,6 +1,7 @@
 ﻿using CsvHelper.Configuration.Attributes;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -24,8 +25,36 @@ namespace RecorderApp.Models
             rank = _rank;
             rating = _rating;
             rateValue = _rateValue;
+            //timeStamp = GetTimestamp(timeStart, timeEnd);
+            timeStamp = "";
         }
 
+        public string GetTimestamp()
+        {
+            string tS = getTS(timeStart);
+            string tE = getTS(timeEnd);
+
+            return tS + " - " + tE;
+
+        }
+
+        public string getTS(int ms)
+        {
+            try
+            {
+
+                TimeSpan t = TimeSpan.FromMilliseconds(ms);
+                string ts = string.Format("{0:D2}:{1:D2}",
+                    t.Minutes,
+                    t.Seconds);
+
+                return ts;
+            }
+            catch
+            {
+                return "no";
+            }
+        }
 
         [Index(0)]
         public string fileName { get; set; }
@@ -50,5 +79,8 @@ namespace RecorderApp.Models
 
         [Index(7)]
         public string rateValue { get; set; }
+
+        [Ignore]
+        public string timeStamp { get; set; }
     }
 }

@@ -23,30 +23,51 @@ namespace RecorderApp.Models
             positiveCount = _positiveCount;
             negativeCount = _negativeCount;
             neutralCount = _neutralCount;
+            //accuracyPct = _accuracyPct;
+
+        }
+
+        public RatingSummary(int _sceneNumber, string _timestamp, int _top1Count = 0, int _positiveCount = 0, int _negativeCount = 0, int _neutralCount = 0, double _accuracyPct=0)
+        {
+            sceneNumber = _sceneNumber;
+            timestamp = _timestamp;
+            top1Count = _top1Count;
+            positiveCount = _positiveCount;
+            negativeCount = _negativeCount;
+            neutralCount = _neutralCount;
+            accuracyPct = _accuracyPct;
 
         }
 
 
-        [Index(0)]
+        [Name("Scene #")]
         public int sceneNumber { get; set; }
 
-        [Index(1)]
+        [Name("Timestamp")]
+        public string timestamp { get; set; }
+
+        //[Name("Interval Start")]
+        [Ignore]
         public int intervalStart { get; set; }
 
-        [Index(2)]
+        //[Name("Interval End")]
+        [Ignore]
         public int intervalEnd { get; set; }
-
-        [Index(3)]
+        
+        [Name("Rank 1 Count")]
         public int top1Count { get; set; }
 
-        [Index(4)]
+        [Name("Positive Ratings")]
         public int positiveCount { get; set; }
 
-        [Index(5)]
+        [Name("Negative Ratings")]
         public int negativeCount { get; set; }
 
-        [Index(6)]
+        [Name("Neutral Ratings")]
         public int neutralCount { get; set; }
+
+        [Name("Accuracy (%)")]
+        public double accuracyPct { get; set; }
 
     }
 }

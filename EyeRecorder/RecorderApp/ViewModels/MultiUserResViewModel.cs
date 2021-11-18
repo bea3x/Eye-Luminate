@@ -2,6 +2,7 @@
 using NReco.VideoInfo;
 using Prism.Commands;
 using Prism.Mvvm;
+using Prism.Services.Dialogs;
 using RecorderApp.Models;
 using RecorderApp.Utility;
 using System;
@@ -19,8 +20,13 @@ namespace RecorderApp.ViewModels
     {
         string exeRuntimeDirectory;
         string outputFileDirectory;
-        public MultiUserResViewModel()
+
+
+        IDialogService _dialogService;
+        public MultiUserResViewModel(IDialogService dialogService)
         {
+            _dialogService = dialogService;
+
             this.AddFileCommand = new RelayCommand(this.OpenFiles);
             this.RemoveFileCommand = new RelayCommand(this.RemoveFile);
             this.ClearListCommand = new RelayCommand(this.ClearList);
@@ -28,6 +34,7 @@ namespace RecorderApp.ViewModels
             this.OpenVidCommand = new RelayCommand(this.OpenVid);
 
             this.GetResultsCommand = new RelayCommand(this.GetResults);
+            this.GetFixationsResults = new RelayCommand(this.GetFixResults);
 
             exeRuntimeDirectory = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location); 
             
@@ -40,7 +47,72 @@ namespace RecorderApp.ViewModels
             //testRun();
         }
 
-        #region
+        #region Error Dialog + Notif Dialog
+
+        private void ShowDialog(string dialogMessage, bool error)
+        {
+            var p = new DialogParameters();
+            p.Add("message", dialogMessage);
+            p.Add("error", error);
+
+            _dialogService.ShowDialog("MessageDialog", p, result =>
+            {
+                if (result.Result == ButtonResult.OK)
+                {
+
+                }
+            });
+        }
+
+        private void ShowNDialog(string dialogMessage, string path)
+        {
+            var p = new DialogParameters();
+            p.Add("message", dialogMessage);
+            p.Add("path", path);
+
+            _dialogService.ShowDialog("NotifDialog", p, result =>
+            {
+                if (result.Result == ButtonResult.OK)
+                {
+
+                }
+            });
+        }
+        private void RChart(string dialogMessage, string path, List<RatingSummary> data)
+        {
+            var p = new DialogParameters();
+            p.Add("message", dialogMessage);
+            p.Add("path", path);
+            p.Add("rateList", data);
+
+            _dialogService.ShowDialog("RateChartView", p, result =>
+            {
+                if (result.Result == ButtonResult.OK)
+                {
+
+                }
+            });
+        }
+
+        private void FChart(string dialogMessage, string path, List<Variability> data)
+        {
+            var p = new DialogParameters();
+            p.Add("message", dialogMessage);
+            p.Add("path", path);
+            p.Add("fixList", data);
+
+            _dialogService.ShowDialog("ChartView", p, result =>
+            {
+                if (result.Result == ButtonResult.OK)
+                {
+
+                }
+            });
+        }
+
+        #endregion
+
+        #region pre Get Results
         private int getClipDuration(string videoPath)
         {
             var ffProbe = new FFProbe();
@@ -123,18 +195,82 @@ namespace RecorderApp.ViewModels
             return rateLst;
         }
 
+        private List<string> readFilesFromList()
+        {
+            List<string> lst = new List<string>();
+            if (UserFileList.Count >= 1)
+            {
+                foreach (FileInfo file in UserFileList)
+                {
+                    lst.Add(file.FullName);
+                }
+            }
+
+            return lst;
+        }
+
+        #endregion
+
+        #region Get Results
 
         public ICommand GetResultsCommand { get; set; }
-
+        /// <summary>
+        /// main void for getting ratings summary
+        /// </summary>
         private async void GetResults()
         {
-            string fn = SaveCsv();
-            if (fn != null) 
-                await generateResults(fn);
+            if (SelectedVid == null)
+            {
+                ShowDialog("Please select a video file to continue.", false);
+            }
+            else if (UserFileList.Count == 0)
+            {
+                ShowDialog("No selected CSV files to process.", true);
+            }
+            else
+            {
+                List<RatingSummary> rateLst = new List<RatingSummary>();
+                string fn = SaveCsv();
+                if (fn != null && SelectedVid != null)
+                {
+                    try
+                    {
+                        rateLst = await generateResults(); 
+                        rateLst = await Task.Run(() => convertIntervals(rateLst));
+                        rateLst = await Task.Run(() => getAccuracy(rateLst));
+
+                        Console.WriteLine(writeFile(rateLst, fn) + " created!");
+                        Console.WriteLine("csv dir: " + Path.GetDirectoryName(fn));
+                        var msg = fn + " successfully created.";
+                        //ShowDialog(msg, false);
+                        //ShowNDialog(msg, outputFileDirectory);
+                        RChart(fn, outputFileDirectory, rateLst);
+                    }
+                    catch (CsvHelper.TypeConversion.TypeConverterException ex)
+                    {
+                        Console.WriteLine(ex.Message);
+                        ShowDialog("Error reading CSV files. Please recheck.", true);
+                    }
+                    catch (System.IO.IOException ex2)
+                    {
+                        Console.WriteLine(ex2.Message);
+                        ShowDialog("Incorrect CSV files. Please recheck.", true);
+                    }
+                    catch (CsvHelper.MissingFieldException ex3)
+                    {
+                        Console.WriteLine(ex3.Message);
+                        ShowDialog("Error reading CSV files. Please recheck.", true);
+                    }
+
+                }
+            }
+            
+
+            //Console.WriteLine(writeFile(rateLst, filename) + " created!");
 
         }
 
-        private async Task generateResults(string filename)
+        private async Task<List<RatingSummary>> generateResults()
         {
             int d = getClipDuration(SelectedVid);
 
@@ -150,26 +286,299 @@ namespace RecorderApp.ViewModels
                 List<VideoClip> csvData = readFile<VideoClip>(csvF);
                 rateLst = await Task.Run(() => countData(rateLst, csvData));
             }
+            return rateLst;
+        }
 
-            Console.WriteLine(writeFile(rateLst, filename) + " created!");
+        private List<RatingSummary> convertIntervals(List<RatingSummary> data)
+        {
+            List<RatingSummary> convData = new List<RatingSummary>();
+            RatingSummary obj;
+            foreach (RatingSummary row in data)
+            {
+                string timestamp = secondsToTimestamp(row.intervalStart, row.intervalEnd);
+                obj = new RatingSummary(row.sceneNumber, timestamp, row.top1Count, row.positiveCount, row.negativeCount, row.neutralCount);
+
+                convData.Add(obj);
+            }
+
+            return convData;
+        }
+
+        private string secondsToTimestamp(int start, int end)
+        {
+            TimeSpan s = TimeSpan.FromSeconds(start);
+            TimeSpan e = TimeSpan.FromSeconds(end);
+            string ts = string.Format("{1:D2}:{2:D2}",
+                        s.Hours,
+                        s.Minutes,
+                        s.Seconds,
+                        s.Milliseconds);
+
+            string te = string.Format("{1:D2}:{2:D2}",
+                        e.Hours,
+                        e.Minutes,
+                        e.Seconds,
+                        e.Milliseconds);
+
+            return ts + " - " + te;
+        }
+
+        private List<RatingSummary> getAccuracy(List<RatingSummary> data)
+        {
+            RatingSummary obj;
+            int count = 0;
+            double avgPct = 0, sum = 0;
+            foreach (RatingSummary row in data)
+            {
+                double pct = calculateAccuracy(row.positiveCount, row.negativeCount, row.neutralCount);
+                row.accuracyPct = pct;
+                sum += pct;
+                count++;
+            }
+
+            avgPct = sum / count;
+            obj = new RatingSummary(0, "Average" ,0,0,0,0,avgPct);
+            data.Add(obj);
+            return data;
+        }
+
+        private double calculateAccuracy(int posCount, int negCount, int neutCount)
+        {
+            double total = posCount + negCount + neutCount;
+            if (total == 0)
+                return 0;
+            else
+            {
+                double pct = (posCount + negCount) / total;
+                pct *= 100;
+
+                return pct;
+            }
         }
 
 
-        private List<string> readFilesFromList()
+
+        #endregion
+
+        #region pre Fix Results
+
+        private List<Variability> initVList(double duration, int skip = 5)
         {
-            List<string> lst = new List<string>();
-            if (UserFileList.Count >= 1)
+
+            List<Variability> initialLst = new List<Variability>();
+
+            // interval times
+            int int_start = 0;
+            int int_end = int_start + skip;
+            int scene_count = 0;
+            int dur = Convert.ToInt32(duration);
+            while (int_start < duration)
             {
-                foreach (FileInfo file in UserFileList)
+                scene_count++;
+
+                if (int_end > duration)
+                    int_end = dur;
+
+                Variability obj = new Variability(scene_count, int_start, int_end);
+                initialLst.Add(obj);
+
+                int_start = int_end + 1;
+                int_end += skip;
+
+            }
+
+            return initialLst;
+        }
+
+        private List<Variability> countData(List<Variability> fixLst, List<Fixation> dataLst)
+        {
+            //List<RatingSummary> ratedList = new List<RatingSummary>();
+
+            foreach (Variability row in fixLst)
+            {
+                int extra = (row.intervalEnd - row.intervalStart) / 2;
+
+                foreach (Fixation userData in dataLst)
                 {
-                    lst.Add(file.FullName);
+                    int time_start = userData.timeStart / 1000;
+                    int time_end = userData.timeEnd / 1000;
+                    double duration = Convert.ToDouble(userData.duration) / 1000.0;
+                    if (time_start >= row.intervalStart && time_end <= row.intervalEnd + extra)
+                    {
+                        //Console.WriteLine("here " + userData.centroidX);
+                        row.centroidXList.Add(userData.centroidX);
+                        row.centroidYList.Add(userData.centroidY);
+                        row.durationList.Add(duration);
+
+                        //row.addToXList(userData.centroidX);
+                        //row.addToYList(userData.centroidY);
+                        //row.addToDurationList(userData.duration);
+                        row.fixationCount++;
+                    }
+                }
+
+                Console.WriteLine("centroidX: " + row.centroidXList.Count());
+
+            }
+
+            return fixLst;
+        }
+
+        #endregion
+
+        #region calculation methods
+
+        private double getZ(double mean, List<double> centroidList)
+        {
+            double sum = 0;
+            foreach(double point in centroidList)
+            {
+                double Zi = Math.Pow((point - mean), 2);
+                sum += Zi;
+            }
+
+            return sum;
+        }
+
+        private double getMean(List<double> centroidList)
+        {
+            double sum = 0;
+            foreach (double point in centroidList)
+            {
+                sum += point;
+            }
+
+            int n = centroidList.Count();
+            return sum/n;
+        }
+
+        private double getSum(List<double> durList)
+        {
+            double sum = 0;
+            foreach (double val in durList)
+            {
+                Console.WriteLine(val);
+                sum += val;
+            }
+
+            return sum;
+        }
+
+        private List<Variability> calculateSD(List<Variability> fixLst)
+        {
+            foreach (Variability row in fixLst)
+            {
+                double meanX = getMean(row.centroidXList);
+                double meanY = getMean(row.centroidYList);
+
+                int countX = row.centroidXList.Count();
+                int countY = row.centroidYList.Count();
+
+                double Zx = getZ(meanX, row.centroidXList) / countX;
+                double Zy = getZ(meanY, row.centroidYList) / countY;
+
+                row.standardDev = Math.Round(Math.Sqrt(Zx + Zy), 2);
+                row.durationLen = Math.Round(getSum(row.durationList),2);
+                //row.durationMean = Math.Round((getSum(row.durationList) / row.durationList.Count), 2);
+                //row.durationLen = getSum(row.durationList);
+
+            }
+            return fixLst;
+        }
+
+        #endregion
+
+        #region Get Fix Results
+
+        public ICommand GetFixationsResults { get; set; }
+        private async void GetFixResults()
+        {
+            if (SelectedVid == null)
+            {
+                ShowDialog("Please select a video file to continue.", false);
+            }
+            else if (UserFileList.Count == 0)
+            {
+                ShowDialog("No selected CSV files to process.", true);
+            }
+            else
+            {
+                
+                List<Variability> fixLst = new List<Variability>();
+                string fn = SaveCsv();
+                if (fn != null)
+                {
+                    try
+                    {
+                        fixLst = await generateFixResults();
+                        fixLst = await Task.Run(() => calculateSD(fixLst));
+                        fixLst = await Task.Run(() => convertIntervals(fixLst));
+
+                        Console.WriteLine(writeFile(fixLst, fn) + " created!");
+                        var msg = fn + " successfully created.";
+                        //ShowDialog(msg, false);
+                        //ShowNDialog(msg, outputFileDirectory);
+                        FChart(fn, outputFileDirectory, fixLst);
+
+                    }
+                    catch (CsvHelper.TypeConversion.TypeConverterException ex)
+                    {
+                        Console.WriteLine(ex.Message);
+                        ShowDialog("Error reading CSV files. Please recheck.", true);
+                    }
+                    catch (System.IO.IOException ex2)
+                    {
+                        Console.WriteLine(ex2.Message);
+                        ShowDialog("Incorrect CSV files. Please recheck.", true);
+                    }
+                    catch (CsvHelper.MissingFieldException ex3)
+                    {
+                        Console.WriteLine(ex3.Message);
+                        ShowDialog("Error reading CSV files. Please recheck.", true);
+                    }
                 }
             }
 
-            return lst;
+            //Console.WriteLine(writeFile(rateLst, filename) + " created!");
+
         }
 
-#endregion
+        private async Task<List<Variability>> generateFixResults()
+        {
+            int d = getClipDuration(SelectedVid);
+
+            List<Variability> fixLst = new List<Variability>();
+            fixLst = initVList(d);
+
+            List<string> csvList = new List<string>();
+
+            csvList = readFilesFromList();
+
+            foreach (string csvF in csvList)
+            {
+                List<Fixation> csvData = readFile<Fixation>(csvF);
+                fixLst = await Task.Run(() => countData(fixLst, csvData));
+            }
+            return fixLst;
+        }
+
+        private List<Variability> convertIntervals(List<Variability> data)
+        {
+            List<Variability> convData = new List<Variability>();
+            Variability obj;
+            foreach (Variability row in data)
+            {
+                //Console.WriteLine("intervals: " + row.durationLen);
+                string timestamp = secondsToTimestamp(row.intervalStart, row.intervalEnd);
+                obj = new Variability(row.sceneNumber, timestamp, row.centroidX, row.centroidY, row.durationLen, row.fixationCount, row.standardDev);
+
+                convData.Add(obj);
+            }
+
+            return convData;
+        }
+
+        #endregion
 
         #region save csv file
 
@@ -183,7 +592,7 @@ namespace RecorderApp.ViewModels
             sfd.SaveFileCommand.Execute(null);
             if (sfd.FileObj != null)
             {
-                Console.WriteLine(sfd.FileObj.Directory);
+                //Console.WriteLine(sfd.FileObj.Directory);
                 outputFileDirectory = sfd.FileObj.DirectoryName;
                 if (sfd.FileObj.Name != null)
                 {
@@ -201,7 +610,6 @@ namespace RecorderApp.ViewModels
         }
 
         #endregion
-
 
         #region bind to listbox from view 
 
@@ -280,10 +688,13 @@ namespace RecorderApp.ViewModels
         public ICommand RemoveFileCommand { get; set; }
         private void RemoveFile()
         {
-            Console.WriteLine(SelectedCSVFile.Name);
             if (SelectedCSVFile != null)
             {
                 UserFileList.Remove(SelectedCSVFile);
+            } 
+            else
+            {
+                ShowDialog("No selected file to remove.", true);
             }
         }
 
@@ -362,7 +773,7 @@ namespace RecorderApp.ViewModels
         {
             string currentPath = Directory.GetCurrentDirectory();
             string vidPath = Path.GetFullPath(Path.Combine(currentPath, @"..\..\..\..\..\videos"));
-            Console.WriteLine(vidPath);
+            //Console.WriteLine(vidPath);
             return vidPath;
         }
 
@@ -392,14 +803,21 @@ namespace RecorderApp.ViewModels
 
         private DelegateCommand _backCommand;
         public DelegateCommand BackCommand =>
-            _backCommand ?? (_backCommand = new DelegateCommand(CloseWindow));
+            _backCommand ?? (_backCommand = new DelegateCommand(GoBack));
 
         void CloseWindow()
         {
             Close?.Invoke();
         }
 
+        void GoBack()
+        {
+            Back?.Invoke();
+        }
+
         public Action Close { get; set; }
+
+        public Action Back { get; set; }
 
         public Action Next { get; set; }
         #endregion

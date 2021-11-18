@@ -1,4 +1,5 @@
-﻿using System.Windows.Controls;
+﻿using System.Windows;
+using System.Windows.Controls;
 
 namespace RecorderApp.Dialogs
 {
@@ -10,6 +11,12 @@ namespace RecorderApp.Dialogs
         public MessageDialog()
         {
             InitializeComponent();
+            Loaded += MessageDialog_Loaded;
+        }
+
+        private void MessageDialog_Loaded(object sender, System.Windows.RoutedEventArgs e)
+        {
+            ((Window)Parent).ResizeMode = ResizeMode.NoResize;
         }
     }
 }

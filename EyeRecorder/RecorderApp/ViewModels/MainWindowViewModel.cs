@@ -22,12 +22,16 @@ namespace RecorderApp.ViewModels
                 SetProperty(ref _title, value);
             }
         }
+
+        string exeRuntimeDirectory;
+
         IDialogService _dialogService;
         IEventAggregator _ea;
         public IView _view;
         public IView2 _view2;
         public IView3 _view3;
         public IView4 _view4;
+
         public MainWindowViewModel(IView view, IView2 view2, IView3 view3, IView4 view4, IEventAggregator ea, IDialogService dialogService)
         {
             _view = view;
@@ -38,15 +42,18 @@ namespace RecorderApp.ViewModels
             _dialogService = dialogService;
             this.OpenCommand = new RelayCommand(this.OpenFile);
 
+            exeRuntimeDirectory = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
+            Console.WriteLine(exeRuntimeDirectory);
 
         }
 
         #region Error Dialog
 
-        private void ShowDialog(string dialogMessage)
+        private void ShowDialog(string dialogMessage, bool error)
         {
             var p = new DialogParameters();
             p.Add("message", dialogMessage);
+            p.Add("error", error);
 
             _dialogService.ShowDialog("MessageDialog", p, result =>
             {
@@ -77,8 +84,8 @@ namespace RecorderApp.ViewModels
             } 
             else
             {
-                var msg = "No Video File Selected.";
-                ShowDialog(msg);
+                var msg = "No Video File Selected. Please select one first.";
+                ShowDialog(msg, false);
             }
         }
 
@@ -207,6 +214,7 @@ namespace RecorderApp.ViewModels
 
         public Action Close { get; set; }
 
+        public Action Back { get; set; }
         public Action Next { get; set; }
 
         #endregion
@@ -224,6 +232,7 @@ namespace RecorderApp.ViewModels
             //GazeTrackerViewModel gazeVm = new GazeTrackerViewModel();
             //gazeVm.startCalibration();
             SendCalibrationSignal(true);
+            
         }
         private void SendCalibrationSignal(bool start)
         {
@@ -239,6 +248,7 @@ namespace RecorderApp.ViewModels
     {
         Action Close { get; set; }
 
+        Action Back { get; set; }
         Action Next { get; set; }
     }
 
