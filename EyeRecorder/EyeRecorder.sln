@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EyeXFramework", "EyeXFramew
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RecorderApp", "RecorderApp\RecorderApp.csproj", "{A940B133-0313-4C34-A6E3-2C4E2B7F2BB6}"
 EndProject
+Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "Eye Luminate", "Eye Luminate\Eye Luminate.vdproj", "{00017E47-C667-407D-AC44-91EC9CD174EB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -61,6 +63,17 @@ Global
 		{A940B133-0313-4C34-A6E3-2C4E2B7F2BB6}.Release|x64.Build.0 = Release|x64
 		{A940B133-0313-4C34-A6E3-2C4E2B7F2BB6}.Release|x86.ActiveCfg = Release|x86
 		{A940B133-0313-4C34-A6E3-2C4E2B7F2BB6}.Release|x86.Build.0 = Release|x86
+		{00017E47-C667-407D-AC44-91EC9CD174EB}.Debug|Any CPU.ActiveCfg = Debug
+		{00017E47-C667-407D-AC44-91EC9CD174EB}.Debug|ARM.ActiveCfg = Debug
+		{00017E47-C667-407D-AC44-91EC9CD174EB}.Debug|ARM64.ActiveCfg = Debug
+		{00017E47-C667-407D-AC44-91EC9CD174EB}.Debug|x64.ActiveCfg = Debug
+		{00017E47-C667-407D-AC44-91EC9CD174EB}.Debug|x86.ActiveCfg = Debug
+		{00017E47-C667-407D-AC44-91EC9CD174EB}.Release|Any CPU.ActiveCfg = Release
+		{00017E47-C667-407D-AC44-91EC9CD174EB}.Release|ARM.ActiveCfg = Release
+		{00017E47-C667-407D-AC44-91EC9CD174EB}.Release|ARM64.ActiveCfg = Release
+		{00017E47-C667-407D-AC44-91EC9CD174EB}.Release|x64.ActiveCfg = Release
+		{00017E47-C667-407D-AC44-91EC9CD174EB}.Release|x86.ActiveCfg = Release
+		{00017E47-C667-407D-AC44-91EC9CD174EB}.Release|x86.Build.0 = Release
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

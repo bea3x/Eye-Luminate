@@ -45,12 +45,16 @@ namespace RecorderApp
         {
             // goes to GazeTrackerView for next command
             containerRegistry.Register<IView,GazeTrackerView>();
+            // goes to PointerTrackerView for next command
+            containerRegistry.Register<IView1, PointerTrackerView>();
             // goes to ResultsView for next command
             containerRegistry.Register<IView2, ResultsView>();            
             // goes to QuickResultsView for next command
             containerRegistry.Register<IView3, QuickResultsView>();
-            // goes to QuickResultsView for next command
+            // goes to MultiUserResView for next command
             containerRegistry.Register<IView4, MultiUserResView>();
+            // goes to LoadClipsView for next command
+            containerRegistry.Register<IView5, LoadClipsView>();
 
             containerRegistry.Register<MainView, MainWindow>();
 
@@ -59,10 +63,12 @@ namespace RecorderApp
 
             //notif dialog
             containerRegistry.RegisterDialog<NotifDialog, NotifDialogViewModel>();
+            containerRegistry.RegisterDialog<HelpDialog, HelpDialogViewModel>();
 
 
             containerRegistry.RegisterDialog<RateChartView, RateChartViewModel>();
             containerRegistry.RegisterDialog<ChartView, ChartViewModel>();
+            containerRegistry.RegisterDialog<ConfigureDialog, ConfigureDialogViewModel>();
 
         }
 

@@ -1,0 +1,64 @@
+﻿<UserControl x:Class="RecorderApp.Dialogs.ConfigureDialog"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:prism="http://prismlibrary.com/"             
+             prism:ViewModelLocator.AutoWireViewModel="True"
+             Width="320" Height="250" Background="#FF222629">
+
+    <UserControl.Resources>
+
+        <Style TargetType="{x:Type TextBlock}">
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Margin" Value="10,10,10,10"/>
+        </Style>
+        <Style TargetType="{x:Type Label}">
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Margin" Value="10,10,10,10"/>
+        </Style>
+        <Style TargetType="{x:Type TextBox}">
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="Foreground" Value="DimGray"/>
+            <Setter Property="Margin" Value="10,10,10,10"/>
+        </Style>
+        <Style TargetType="{x:Type Button}">
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Background" Value="#FF72C480"/>
+        </Style>
+    </UserControl.Resources>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <StackPanel Grid.Row="1" Grid.RowSpan="2" VerticalAlignment="Bottom" Orientation="Vertical">
+            <Label Content="Path to GazePointer.exe" />
+            <TextBox Text="{Binding PathToApp}" Height="20"/>
+
+        </StackPanel>
+
+        <StackPanel Grid.Row="2" Grid.RowSpan="2" VerticalAlignment="Bottom" Orientation="Vertical">
+            <Label Content="Path to Python.exe" />
+            <TextBox Text="{Binding PathToPython}" Height="20"/>
+
+        </StackPanel>
+        <!-- 
+        <StackPanel Grid.Row="3" Orientation="Horizontal" VerticalAlignment="Center">
+        <Label Content="Hide Cursor:" ></Label>
+            <CheckBox Margin="0,10,10,10" VerticalAlignment="Center" IsChecked="{Binding CursorIsChecked}"></CheckBox>
+        </StackPanel>
+        -->
+
+        <Button Command="{Binding CloseDialogCommand}" CommandParameter="true" Content="OK" Width="75" Height="25" 
+                    HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="10,10,20,10" Grid.Row="4" IsDefault="True">
+            <Button.Resources>
+                <Style TargetType="Border">
+                    <Setter Property="CornerRadius" Value="5"/>
+                </Style>
+            </Button.Resources>
+        </Button>
+    </Grid>
+</UserControl>

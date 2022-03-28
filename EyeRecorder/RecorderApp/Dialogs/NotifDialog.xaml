@@ -39,7 +39,8 @@
                 </Button.Resources>
             </Button>
 
-            <Button Command="{Binding OpenPathCommand}" CommandParameter="true" Content="Open Folder" Width="75" Height="25" HorizontalAlignment="Right" Margin="0,10,0,0" Grid.Row="1" IsDefault="True">
+            <Button Command="{Binding OpenPathCommand}" CommandParameter="true" Content="Open Folder" Width="75" Height="25" HorizontalAlignment="Right" Margin="0,10,0,0" Grid.Row="1" 
+                    IsDefault="True" Visibility="{Binding PathExists, Converter={StaticResource VisibilityConverter}}">
                 <Button.Resources>
                     <Style TargetType="Border">
                         <Setter Property="CornerRadius" Value="5"/>

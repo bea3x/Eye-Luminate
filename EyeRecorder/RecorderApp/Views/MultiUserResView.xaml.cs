@@ -31,7 +31,7 @@ namespace RecorderApp.Views
                 {
                     CancelEventArgs arg = new CancelEventArgs();
                     BackToMain(arg);
-                    mView.Show();
+                    mView.ShowDialog();
                 };
 
             }

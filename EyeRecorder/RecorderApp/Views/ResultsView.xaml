@@ -5,7 +5,7 @@
              xmlns:utilities="clr-namespace:RecorderApp.Utility"
              xmlns:fa="http://schemas.fontawesome.io/icons/"
              prism:ViewModelLocator.AutoWireViewModel="True"
-            Title="Results" Height="640" Width="800" 
+            Title="Developer Mode" Height="640" Width="800" 
             ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.CanContentScroll="True" WindowStartupLocation="CenterScreen">
 
     <Window.Resources>
@@ -44,7 +44,7 @@
 
             <Rectangle Width="5" Fill="#72c480
                    " HorizontalAlignment="Left"/>
-            <StackPanel>
+            <StackPanel Background="#2e3337">
 
                 <StackPanel.Resources>
                     <Style TargetType="{x:Type Button}">
@@ -64,9 +64,6 @@
                         <Setter Property="Height" Value="1"/>
                     </Style>
                 </StackPanel.Resources>
-                <StackPanel.Background>
-                    <ImageBrush ImageSource="/Assets/resBG.png"/>
-                </StackPanel.Background>
 
                 <WrapPanel VerticalAlignment="Center">
                     <Button Command="{Binding BackCommand}" Width="30" Height="30" VerticalAlignment="Center" Margin="30,20,0,0" Foreground="White" Background="#FF72C480">
@@ -143,9 +140,9 @@
                     Choose Video File
                 </Button>
 
-                <TextBlock x:Name="txtSelectedPath" Width="450" Foreground="White" FontFamily="Segoe UI Semibold" >
+                <!--<TextBlock x:Name="txtSelectedPath" Width="450" Foreground="White" FontFamily="Segoe UI Semibold" >
                     <Run Text="{Binding SelectedPath}" FontStyle="Italic" FontSize="9"/>
-                </TextBlock>
+                </TextBlock>-->
                 <Button Command="{Binding ChooseDestPath}" Foreground="White" Background="#FFB3B3B3">
                     <Button.Resources>
                         <Style TargetType="Border">
@@ -157,7 +154,19 @@
 
                 <StackPanel Orientation="Horizontal" Width="250" Height="50">
                     <TextBlock Width="150" VerticalAlignment="Center" Foreground="White">Select how many scenes?</TextBlock>
-                    <TextBox x:Name="txt_Num" Width="50" Height="20" VerticalAlignment="Center" Text="{Binding NumScenes}" Foreground="White" Background="#FF2E3337" BorderBrush="#FF2E3337"></TextBox>
+                    <!--<TextBox x:Name="txt_Num" Width="50" Height="20" VerticalAlignment="Center" Text="{Binding NumScenes}" Foreground="White" Background="#FF2E3337" BorderBrush="#FF2E3337"></TextBox>-->
+                    <TextBox x:Name="txt_Num" Width="40" Height="20" Text="{Binding NumScenes}" Foreground="White" Background="#FF2E3337" 
+                             BorderBrush="White" FontFamily="Segoe UI Semibold" HorizontalAlignment="Center" TextAlignment="Center" />
+
+                    <Button Command="{Binding HelpCommand}" Width="20" Height="20" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="15,15,0,0" Foreground="White" Background="#FFB3B3B3">
+                        <Button.Resources>
+                            <Style TargetType="Border">
+                                <Setter Property="CornerRadius" Value="50"/>
+                            </Style>
+                        </Button.Resources>
+
+                        <fa:ImageAwesome Icon="Question" Height="16" Width="8" Foreground="AliceBlue" VerticalAlignment="Center"/>
+                    </Button>
                 </StackPanel>
                 <Button x:Name="btn_get" Command="{Binding ExtractFrames}" Foreground="White" Background="#FF72C480">
                     <Button.Resources>
@@ -167,8 +176,15 @@
                     </Button.Resources>
                     Extract Frames
                 </Button>
-                
-                
+
+                <Button x:Name="btn_hm" Command="{Binding SaveHeatmapCommand}" Background="#FF72C480" FontFamily="Segoe UI Semibold" Foreground="White">
+                    <Button.Resources>
+                        <Style TargetType="Border">
+                            <Setter Property="CornerRadius" Value="5"/>
+                        </Style>
+                    </Button.Resources>Generate Heatmap</Button>
+
+
                 <fa:ImageAwesome Margin="0,30,10,0" Icon="CircleOutlineNotch" Spin="True" Height="48" Width="48" Foreground="AliceBlue" 
                                  Visibility="{Binding IsProcessing, Converter={StaticResource VisibilityConverter}}"/>
                 <TextBlock x:Name="txtProgressOutput" Width="150" Foreground="White" FontFamily="Segoe UI Semibold" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="30,30,10,0">
@@ -188,9 +204,6 @@
                               MouseLeftButtonDown="PreviewClip_MouseLeftButtonDown" MouseEnter="PreviewClip_MouseEnter" MouseLeave="PreviewClip_MouseLeave" 
                               Visibility="{Binding AreClipsLoaded, Converter={StaticResource VisibilityConverter}}"/>
 
-                <Button x:Name="btn_hm" Command="{Binding SaveHeatmapCommand}" 
-                        Margin="0,50" Width="150" Background="#FF72C480" FontFamily="Segoe UI Semibold" Foreground="White"
-                        Visibility="{Binding AreClipsLoaded, Converter={StaticResource VisibilityConverter}}">Generate Heatmap</Button>
 
 
                 <!-- rate each scene + selected scenes -->
@@ -218,6 +231,11 @@
                                               MouseEnter="clipEl_MouseEnter" MouseLeave="clipEl_MouseLeave" 
                                               LoadedBehavior="Manual" Loaded="clipEl_Loaded" ScrubbingEnabled="True" 
                                               MediaEnded="clipEl_MediaEnded" />
+                                    <WrapPanel Margin="10,20,0,0">
+                                        <TextBlock Text="{Binding rank}" FontFamily="Segoe UI Semibold" Foreground="White" />
+                                        <TextBlock Text=": " Foreground="White" />
+                                        <TextBlock Text="{Binding timeStamp}" FontFamily="Segoe UI Semibold" Foreground="White" />
+                                    </WrapPanel>
                                     <ListBox x:Name="lisBboxItems" SelectedIndex="{Binding rating, Mode=OneWayToSource}" Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center"
                                              BorderThickness="0" Background="Transparent">
                                         <ListBox.ItemsPanel>

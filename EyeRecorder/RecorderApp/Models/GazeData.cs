@@ -1,4 +1,5 @@
-﻿using Prism.Mvvm;
+﻿using CsvHelper.Configuration.Attributes;
+using Prism.Mvvm;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -41,7 +42,7 @@ namespace RecorderApp.Models
         }
 
         private double _gazeX;
-
+        [Index(0)]
         public double GazeX
         {
             get
@@ -56,7 +57,7 @@ namespace RecorderApp.Models
         }
 
         private double _gazeY;
-
+        [Index(1)]
         public double GazeY
         {
             get
@@ -71,7 +72,7 @@ namespace RecorderApp.Models
         }
 
         private int _time;
-
+        [Index(2)]
         public int Time
         {
             get
@@ -86,7 +87,7 @@ namespace RecorderApp.Models
         }
 
         private int _timeDiff;
-
+        [Index(3)]
         public int TimeDiff
         {
             get { return _timeDiff; }
@@ -98,7 +99,7 @@ namespace RecorderApp.Models
         }
 
         private double _distance;
-
+        [Index(4)]
         public double Distance
         {
             get { return _distance; }
@@ -110,7 +111,7 @@ namespace RecorderApp.Models
         }
 
         private double _velocity;
-
+        [Index(5)]
         public double Velocity
         {
             get { return _velocity; }
@@ -122,7 +123,7 @@ namespace RecorderApp.Models
         }
 
         private string _classification;
-
+        [Index(6)]
         public string Classification
         {
             get { return _classification; }
@@ -135,7 +136,7 @@ namespace RecorderApp.Models
 
 
         private double _centroidX;
-
+        [Index(7)]
         public double CentroidX
         {
             get { return _centroidX; }
@@ -147,7 +148,7 @@ namespace RecorderApp.Models
         }
 
         private double _centroidY;
-
+        [Index(8)]
         public double CentroidY
         {
             get { return _centroidY; }

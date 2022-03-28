@@ -171,6 +171,12 @@ namespace RecorderApp.ViewModels
 
         public List<GazeData> normalizeCoords(List<GazeData> data, int width, int height)
         {
+            if (width == 0 || height == 0)
+            {
+                width = 1920;
+                height = 1080;
+            }
+                
             Console.WriteLine("W: " + width + " H: " + height);
             List<GazeData> newData = new List<GazeData>();
             foreach (GazeData row in data)

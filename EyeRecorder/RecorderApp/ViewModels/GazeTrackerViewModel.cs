@@ -100,6 +100,7 @@ namespace RecorderApp.ViewModels
 
             var stream = _eyeXHost.CreateGazePointDataStream(Tobii.EyeX.Framework.GazePointDataMode.LightlyFiltered);
 
+            /*
             #region write to output file
 
             // get path for output
@@ -130,7 +131,7 @@ namespace RecorderApp.ViewModels
             // write headers on csv file
             System.IO.File.WriteAllText(outputFileDirectory + @"\" + outputFileName + ".csv", "X Gaze Data, Y Gaze Data, Time \r\n");
             #endregion
-
+            */
 
             stream.Next += (s, e) => updateGazeData((int)e.X, (int)e.Y, Timespan);
         }
@@ -156,6 +157,7 @@ namespace RecorderApp.ViewModels
         {
             if (ended)
             {
+                writeFile(rawData);
                 ShowQuickResultsWindow();
             }
         }
@@ -214,9 +216,16 @@ namespace RecorderApp.ViewModels
             }
         }
 
-        public void GetTimeElapsed(int timeMs)
+        public void GetTimeElapsed(Tuple<int,int,int> data)
         {
+            ///*
+            int x = data.Item1;
+            int y = data.Item2;
+            int timeMs = data.Item3;
+            //*/
             Timespan = timeMs;
+
+            updateGazeData(x, y, Timespan);
         }
 
 
@@ -230,30 +239,19 @@ namespace RecorderApp.ViewModels
         /// <summary>
         /// bind to view element in GazeTrackerView.xaml & gaze data model 
         /// </summary>
-        public double GazeX
+        /// 
+        private int _gazeX;
+        public int GazeX
         {
-            get
-            {
-                return gazeData.GazeX;
-            }
-            set
-            {
-                gazeData.GazeX = value;
-                RaisePropertyChanged("GazeX");
-            }
+            get { return _gazeX; }
+            set { SetProperty(ref _gazeX, value); }
         }
 
-        public double GazeY
+        private int _gazeY;
+        public int GazeY
         {
-            get
-            {
-                return gazeData.GazeY;
-            }
-            set
-            {
-                gazeData.GazeY = value;
-                RaisePropertyChanged("GazeY");
-            }
+            get { return _gazeY; }
+            set { SetProperty(ref _gazeY, value); }
         }
 
         public int Time
@@ -286,10 +284,12 @@ namespace RecorderApp.ViewModels
             GazeY = y;
             Time = time;
 
-            //rawData.Add(new RawGaze(x, y, time));
-            string csvFormattedGazeData = x.ToString() + "," + y.ToString() + "," + time.ToString();
+            rawData.Add(new RawGaze(x, y, time));
+            //string csvFormattedGazeData = x.ToString() + "," + y.ToString() + "," + time.ToString();
             // appends string to csv every function call
-            writeDataToFile(csvFormattedGazeData);
+            //writeDataToFile(csvFormattedGazeData);
+
+
 
             //writeFile(rawData, "gazeTrackerOutput");
         }
@@ -309,6 +309,42 @@ namespace RecorderApp.ViewModels
             }
         }
 
+        private void writeFile(List<RawGaze> data)
+        {
+
+            // get path for output
+            string exeRuntimeDirectory = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
+
+            // filename with filename of clip and timestamp of recording
+            String timeStamp = DateTime.Now.ToString("yyyyMMdd-HHmmss");
+            //if (videoSource.ToString() != null)
+            string clipName = Path.GetFileName(videoSource.ToString());
+
+            int dotPos = clipName.IndexOf(".");
+            clipName = clipName.Substring(0, dotPos);
+            Console.WriteLine("video name: " + clipName);
+            outputFileName = clipName + "_" + timeStamp + ".csv";
+            //string outputFolder = outputFileName;
+
+            // find output foldr/ create if it doesn't exit
+            outputFileDirectory = Path.Combine(exeRuntimeDirectory, "Output", "GazeTrackerOutput");
+            if (!System.IO.Directory.Exists(outputFileDirectory))
+            {
+                System.IO.Directory.CreateDirectory(outputFileDirectory);
+            }
+
+
+            string fullOutput = outputFileDirectory + @"\" + outputFileName;
+            using (var writer = new StreamWriter(fullOutput))
+            using (var csv = new CsvWriter(writer, CultureInfo.InvariantCulture))
+            {
+                csv.WriteHeader<RawGaze>();
+                csv.NextRecord();
+                csv.WriteRecords(data);
+            }
+            Console.WriteLine("written: " + fullOutput);
+
+        }
 
         #endregion
 

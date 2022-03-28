@@ -44,7 +44,7 @@
         <Grid>
             <!--<Rectangle Width="5" Fill="#72c480
                        " HorizontalAlignment="Left"/>-->
-            <StackPanel CanVerticallyScroll="False">
+            <StackPanel CanVerticallyScroll="False" Background="#2e3337">
 
                 <StackPanel.Resources>
                     <Style TargetType="{x:Type Button}">
@@ -64,9 +64,6 @@
                         <Setter Property="Height" Value="1"/>
                     </Style>
                 </StackPanel.Resources>
-                <StackPanel.Background>
-                    <ImageBrush ImageSource="/Assets/qResBG.png"/>
-                </StackPanel.Background>
 
                 <WrapPanel VerticalAlignment="Center">
                     <Button Command="{Binding BackCommand}" Width="30" Height="30" VerticalAlignment="Center" Margin="30,20,0,0" Foreground="White" Background="#FF72C480">
@@ -92,9 +89,9 @@
                 <Button x:Name="btn_Data" Command="{Binding OpenCommand}">Choose CSV File</Button>
                 -->
 
-                <TextBlock x:Name="txtSelectedFile" Width="450" Foreground="White" FontFamily="Segoe UI Semilight">
+                <!--<TextBlock x:Name="txtSelectedFile" Width="450" Foreground="White" FontFamily="Segoe UI Semilight">
                     <Run Text="{Binding ElementName=lbFiles, Path=SelectedItem.FullName, Mode=OneWay}" FontStyle="Italic" FontSize="9"/>
-                </TextBlock>
+                </TextBlock>-->
                 <ListBox x:Name="lbFiles" ItemsSource="{Binding FileList}" MinHeight="45" Width="300" Margin="0,20,0,0" Height="80"
                              SelectedItem="{Binding SelectedCSV}" HorizontalAlignment="Center" VerticalAlignment="Center" Background="#FF222629" BorderBrush="#FF222629" Foreground="White">
                     <ListBox.ItemTemplate>
@@ -106,9 +103,9 @@
                     </ListBox.ItemTemplate>
                 </ListBox>
 
-                <TextBlock x:Name="txtSelectedVid" Width="450" Foreground="White" FontFamily="Segoe UI Semilight" TextAlignment="Center" >
+                <!--<TextBlock x:Name="txtSelectedVid" Width="450" Foreground="White" FontFamily="Segoe UI Semilight" TextAlignment="Center" >
                     <Run Text="{Binding SelectedVid}" FontStyle="Italic" FontSize="9"/>
-                </TextBlock>
+                </TextBlock>-->
                 <Button x:Name="btn_open" Command="{Binding OpenVidCommand}" Foreground="White" Background="#FFB3B3B3">
                     <Button.Resources>
                         <Style TargetType="Border">
@@ -208,6 +205,11 @@
                                               MouseEnter="clipEl_MouseEnter" MouseLeave="clipEl_MouseLeave" 
                                               LoadedBehavior="Manual" Loaded="clipEl_Loaded" ScrubbingEnabled="True" 
                                               MediaEnded="clipEl_MediaEnded" />
+                                    <WrapPanel Margin="10,20,0,0">
+                                        <TextBlock Text="{Binding rank}" FontFamily="Segoe UI Semibold" Foreground="White" />
+                                        <TextBlock Text=": " Foreground="White" />
+                                        <TextBlock Text="{Binding timeStamp}" FontFamily="Segoe UI Semibold" Foreground="White" />
+                                    </WrapPanel>
                                     <ListBox x:Name="lisBboxItems" SelectedIndex="{Binding rating, Mode=OneWayToSource}" Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center"
                                              BorderThickness="0" Background="Transparent">
                                         <ListBox.ItemsPanel>

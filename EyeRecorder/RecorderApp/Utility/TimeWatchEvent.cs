@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace RecorderApp.Utility
 {
-    public class TimeWatchEvent : PubSubEvent<int>
+    public class TimeWatchEvent : PubSubEvent<Tuple<int,int,int>>
     {
     }
 }

@@ -34,6 +34,12 @@ namespace RecorderApp.Dialogs
             set { SetProperty(ref _directory, value); }
         }
 
+        private bool _pathExists;
+        public bool PathExists
+        {
+            get { return _pathExists; }
+            set { SetProperty(ref _pathExists, value); }
+        }
 
         public DelegateCommand CloseDialogCommand { get; }
 
@@ -65,6 +71,14 @@ namespace RecorderApp.Dialogs
             Message = parameters.GetValue<string>("message");
             Directory = parameters.GetValue<string>("path");
 
+            if (Directory == "")
+            {
+                PathExists = false;
+            }
+            else
+            {
+                PathExists = true;
+            }
         }
 
     }

@@ -6,8 +6,10 @@ using RecorderApp.Utility;
 using RecorderApp.ViewModels;
 using System;
 using System.ComponentModel;
+using System.Globalization;
 using System.IO;
 using System.Windows;
+using System.Windows.Input;
 using System.Windows.Threading;
 
 namespace RecorderApp.Views
@@ -17,6 +19,9 @@ namespace RecorderApp.Views
     /// </summary>
     public partial class GazeTrackerView : Window, IView
     {
+
+        int x = 0;
+        int y = 0;
 
         IEventAggregator _ea;
         public GazeTrackerView(IEventAggregator ea)
@@ -32,6 +37,7 @@ namespace RecorderApp.Views
             //Loaded += GazeTrackerView_Loaded;
             Loaded += GazeTrackerViewModel_Loaded;
 
+            Cursor = Cursors.None;
         }
 
         private void GazeTrackerViewModel_Loaded(object sender, RoutedEventArgs e)
@@ -71,9 +77,9 @@ namespace RecorderApp.Views
 
         protected override void OnClosing(CancelEventArgs e)
         {
-            //this.Visibility = Visibility.Collapsed;
+            this.Visibility = Visibility.Collapsed;
             e.Cancel = true;
-            Application.Current.Shutdown();
+            //Application.Current.Shutdown();
             //base.OnClosed(e);
         }
         #endregion
@@ -86,6 +92,7 @@ namespace RecorderApp.Views
 
         private void videoWindow_MediaEnded(object sender, RoutedEventArgs e)
         {
+            Cursor = Cursors.Arrow;
             SendMediaStatus(true);
         }
 
@@ -104,9 +111,10 @@ namespace RecorderApp.Views
         /// send time from timer to viewmodel
         /// </summary>
         /// <param name="timeElapsed"></param>
-        private void SendTimeElapsed(int timeElapsed)
+        private void SendTimeElapsed(int x, int y, int timeElapsed)
         {
-            _ea.GetEvent<TimeWatchEvent>().Publish(timeElapsed);
+            var data = Tuple.Create(x, y, timeElapsed);
+            _ea.GetEvent<TimeWatchEvent>().Publish(data);
             Console.WriteLine("Recording triggered");
         }
         void timer_Tick(object sender, EventArgs e)
@@ -116,7 +124,8 @@ namespace RecorderApp.Views
 
                 int timeElapsed = Convert.ToInt32(videoWindow.Position.TotalMilliseconds);
 
-                SendTimeElapsed(timeElapsed);
+                SendTimeElapsed(x, y, timeElapsed);
+                //SendTimeElapsed(timeElapsed);
                 //gazeVm.setTimeElapsed(timeElapsed);
                 if (videoWindow.NaturalDuration.HasTimeSpan)
                 {
@@ -130,6 +139,21 @@ namespace RecorderApp.Views
         }
 
         #endregion
+
+        private void Window_MouseMove(object sender, MouseEventArgs e)
+        {
+            Point position = Mouse.GetPosition(this);
+            Point ptS = PointToScreen(position);
+
+            x = Convert.ToInt32(ptS.X);
+            y = Convert.ToInt32(ptS.Y);
+            txtGazeX.Text = ptS.X.ToString();
+            txtGazeY.Text = ptS.Y.ToString();
+
+            string Text = "X:" + ptS.X + " Y:" + ptS.Y;
+            Console.WriteLine(Text);
+        }
+
 
     }
     public interface IView

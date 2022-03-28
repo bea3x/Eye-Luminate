@@ -1,6 +1,7 @@
 ﻿using CsvHelper;
 using NReco.VideoInfo;
 using Prism.Commands;
+using Prism.Events;
 using Prism.Mvvm;
 using Prism.Services.Dialogs;
 using RecorderApp.Models;
@@ -8,6 +9,7 @@ using RecorderApp.Utility;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -21,20 +23,27 @@ namespace RecorderApp.ViewModels
         string exeRuntimeDirectory;
         string outputFileDirectory;
 
+        string hmOutputPath;
+        string pythonPath;
+        IEventAggregator _ea;
 
         IDialogService _dialogService;
-        public MultiUserResViewModel(IDialogService dialogService)
+        public MultiUserResViewModel(IDialogService dialogService, IEventAggregator ea)
         {
             _dialogService = dialogService;
+            _ea = ea;
+            ea.GetEvent<SavePythonPathEvent>().Subscribe(SetPythonPath);
 
             this.AddFileCommand = new RelayCommand(this.OpenFiles);
             this.RemoveFileCommand = new RelayCommand(this.RemoveFile);
             this.ClearListCommand = new RelayCommand(this.ClearList);
+            this.HelpCommand = new RelayCommand(this.ShowHelp);
 
             this.OpenVidCommand = new RelayCommand(this.OpenVid);
 
             this.GetResultsCommand = new RelayCommand(this.GetResults);
             this.GetFixationsResults = new RelayCommand(this.GetFixResults);
+            this.GetGrpHeatmap = new RelayCommand(this.GetHeatmap);
 
             exeRuntimeDirectory = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location); 
             
@@ -45,6 +54,11 @@ namespace RecorderApp.ViewModels
             }
 
             //testRun();
+        }
+
+        //get python path
+        private void SetPythonPath(string path) {
+            pythonPath = path;
         }
 
         #region Error Dialog + Notif Dialog
@@ -235,10 +249,14 @@ namespace RecorderApp.ViewModels
                 {
                     try
                     {
+
+                        inProcess(true);
+                        Output = "Generating ratings summary...";
                         rateLst = await generateResults(); 
                         rateLst = await Task.Run(() => convertIntervals(rateLst));
                         rateLst = await Task.Run(() => getAccuracy(rateLst));
 
+                        inProcess(false);
                         Console.WriteLine(writeFile(rateLst, fn) + " created!");
                         Console.WriteLine("csv dir: " + Path.GetDirectoryName(fn));
                         var msg = fn + " successfully created.";
@@ -248,6 +266,7 @@ namespace RecorderApp.ViewModels
                     }
                     catch (CsvHelper.TypeConversion.TypeConverterException ex)
                     {
+                        
                         Console.WriteLine(ex.Message);
                         ShowDialog("Error reading CSV files. Please recheck.", true);
                     }
@@ -260,6 +279,10 @@ namespace RecorderApp.ViewModels
                     {
                         Console.WriteLine(ex3.Message);
                         ShowDialog("Error reading CSV files. Please recheck.", true);
+                    }
+                    finally
+                    {
+                        clearProc();
                     }
 
                 }
@@ -405,9 +428,11 @@ namespace RecorderApp.ViewModels
                     double duration = Convert.ToDouble(userData.duration) / 1000.0;
                     if (time_start >= row.intervalStart && time_end <= row.intervalEnd + extra)
                     {
+                        int Width = 1920;
+                        int Height = 1080;
                         //Console.WriteLine("here " + userData.centroidX);
-                        row.centroidXList.Add(userData.centroidX);
-                        row.centroidYList.Add(userData.centroidY);
+                        row.centroidXList.Add(userData.centroidX*Width);
+                        row.centroidYList.Add(userData.centroidY*Height);
                         row.durationList.Add(duration);
 
                         //row.addToXList(userData.centroidX);
@@ -510,10 +535,14 @@ namespace RecorderApp.ViewModels
                 {
                     try
                     {
+
+                        inProcess(true);
+                        Output = "Generating fixation summary...";
                         fixLst = await generateFixResults();
                         fixLst = await Task.Run(() => calculateSD(fixLst));
                         fixLst = await Task.Run(() => convertIntervals(fixLst));
 
+                        inProcess(false);
                         Console.WriteLine(writeFile(fixLst, fn) + " created!");
                         var msg = fn + " successfully created.";
                         //ShowDialog(msg, false);
@@ -535,6 +564,10 @@ namespace RecorderApp.ViewModels
                     {
                         Console.WriteLine(ex3.Message);
                         ShowDialog("Error reading CSV files. Please recheck.", true);
+                    }
+                    finally
+                    {
+                        clearProc();
                     }
                 }
             }
@@ -576,6 +609,204 @@ namespace RecorderApp.ViewModels
             }
 
             return convData;
+        }
+
+        #endregion
+
+        #region Group Heatmap
+        public ICommand GetGrpHeatmap { get; set; }
+
+        private async void GetHeatmap()
+        {
+            if (SelectedVid == null)
+            {
+                ShowDialog("Please select a video file to continue.", false);
+            }
+            else if (UserFileList.Count == 0)
+            {
+                ShowDialog("No selected CSV files to process.", true);
+            }
+            else
+            {
+
+
+                try
+                {
+                    // 1. write to text file
+                    string txtFile = await writeTxt();
+                    // 2. start loading
+                    // 3. start python script
+                    inProcess(true);
+                    Output = "Generating clip with fixation map...";
+
+                    string fn = SaveHeatmapDialog();
+                    //string dPath = Path.GetDirectoryName(fn);
+                    //Console.WriteLine("dest: " + dPath);
+                    if (fn != null && SelectedVid != null)
+                    {
+                        await saveHeatmap(txtFile,fn);
+                        inProcess(false);
+
+                        // notification dialog => done task
+                        var msg = "Generating clip with fixation map...Done";
+                        ShowNDialog(msg, hmOutputPath);
+                    }
+                    // 4. end loading
+
+                }
+                catch (CsvHelper.TypeConversion.TypeConverterException ex)
+                {
+                    Console.WriteLine(ex.Message);
+                    ShowDialog("Error reading CSV files. Please recheck.", true);
+                }
+                catch (System.IO.IOException ex2)
+                {
+                    Console.WriteLine(ex2.Message);
+                    ShowDialog("Incorrect CSV files. Please recheck.", true);
+                }
+                catch (CsvHelper.MissingFieldException ex3)
+                {
+                    Console.WriteLine(ex3.Message);
+                    ShowDialog("Error reading CSV files. Please recheck.", true);
+                }
+                finally
+                {
+                    clearProc();
+                }
+            }
+        }
+
+        private async Task<string> writeTxt()
+        {
+            List<string> csvList = new List<string>();
+            csvList = readFilesFromList();
+
+            foreach (string csvF in csvList)
+            {
+                //check csv file
+                List<Fixation> csvData = readFile<Fixation>(csvF);
+            }
+
+            string outputFileName = "temp.txt";
+            string fullOutput = outputFileDirectory + @"\" + outputFileName;
+
+            await Task.Run(()=>File.WriteAllLines(fullOutput, csvList));
+
+            return fullOutput;
+        }
+
+        #endregion
+
+        #region Save Heatmap
+
+        private string SaveHeatmapDialog()
+        {
+            FileDialogViewModel sfd = new FileDialogViewModel();
+            sfd.Extension = "*.mp4";
+            sfd.Filter = "MP4 File(.mp4)|*.mp4 | All(*.*)|*";
+
+            sfd.InitialDirectory = outputFileDirectory;
+            sfd.SaveFileCommand.Execute(null);
+            if (sfd.FileObj != null)
+            {
+                //Console.WriteLine(sfd.FileObj.Directory);
+                //outputFileDirectory = sfd.FileObj.DirectoryName;
+                outputFileDirectory = sfd.FileObj.DirectoryName;
+                hmOutputPath = Path.Combine(outputFileDirectory, "Fixation-maps");
+                if (!System.IO.Directory.Exists(hmOutputPath))
+                {
+                    System.IO.Directory.CreateDirectory(hmOutputPath);
+                }
+                if (sfd.FileObj.Name != null)
+                {
+                    return sfd.FileObj.Name;
+                }
+                else
+                {
+                    return "Heatmap";
+                }
+            }
+            else
+                return null;
+
+        }
+
+
+        private async Task saveHeatmap(string textFile, string vidFileName = "")
+        {
+            //string scriptPath = "../../../../Scripts/getHeatmap.py";
+            string currentDir = Directory.GetCurrentDirectory();
+            var gparent = Directory.GetParent(currentDir).Parent.Parent;
+            string scriptPath = Path.Combine(gparent.FullName, @"Scripts\groupHeatmap.py");
+
+
+            string vidPath = selectedVid;
+
+            string args = textFile + " " + '"' + vidPath + '"' + " " + vidFileName;
+            //runScript(scriptPath, args, destPath);
+            Console.WriteLine("chosen args: " + args);
+            await Task.Run(() => runScript(scriptPath, args, hmOutputPath));
+
+
+        }
+
+        #endregion
+
+
+
+        #region loading circle bidn
+
+        private bool _isProcessing;
+
+        public bool IsProcessing
+        {
+            get { return _isProcessing; }
+            set
+            {
+                //_isProcessing = value; 
+                SetProperty(ref _isProcessing, value);
+            }
+        }
+
+        private void inProcess(bool status)
+        {
+            IsProcessing = status;
+        }
+
+        private string _output;
+        public string Output
+        {
+            get { return _output; }
+            set
+            {
+                SetProperty(ref _output, value);
+            }
+        }
+
+        #endregion
+
+        #region run cmd
+        void runScript(string pythonScript, string args, string destFolder)
+        {
+            destFolder = '"' + destFolder + '"';
+            Console.WriteLine(pythonPath, pythonScript + " " + args + " " + destFolder);
+            Process p = new Process();
+            //p.StartInfo = new ProcessStartInfo(exeRuntimeDirectory + @"\..\pyenv\python.exe", pythonScript + " " + args + " " + destFolder)
+            p.StartInfo = new ProcessStartInfo(pythonPath, pythonScript + " " + args + " " + destFolder)
+            {
+                RedirectStandardOutput = true,
+                UseShellExecute = false,
+                CreateNoWindow = true,
+                WorkingDirectory = outputFileDirectory
+            };
+
+            p.Start();
+
+            string output = p.StandardOutput.ReadToEnd();
+            p.WaitForExit();
+
+            Console.WriteLine("Running Python Script...");
+            Console.WriteLine(output);
         }
 
         #endregion
@@ -751,6 +982,31 @@ namespace RecorderApp.ViewModels
             return fullOutput;
         }
         #endregion
+
+        #region Show Help Dialog
+        public ICommand HelpCommand { get; set; }
+
+        private void ShowHelp()
+        {
+            var p = new DialogParameters();
+            p.Add("type", "multiview");
+
+            _dialogService.ShowDialog("HelpDialog", p, result =>
+            {
+                if (result.Result == ButtonResult.OK)
+                {
+
+                }
+            });
+        }
+
+        #endregion
+
+        private void clearProc()
+        {
+            inProcess(false);
+            Output = "";
+        }
 
         #region Open Video File
 

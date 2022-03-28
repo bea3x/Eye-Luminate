@@ -1,4 +1,5 @@
 ﻿using Prism.Events;
+using Prism.Services.Dialogs;
 using RecorderApp.Utility;
 using RecorderApp.ViewModels;
 using System;
@@ -24,19 +25,33 @@ namespace RecorderApp.Views
     public partial class QuickResultsView : Window, IView3
     {
         IEventAggregator _ea;
-
-        public QuickResultsView(IEventAggregator ea)
+        IDialogService _dialogService;
+        public QuickResultsView(IEventAggregator ea, IDialogService dialogService)
         {
             InitializeComponent();
             _ea = ea;
             Loaded += QuickResultsView_Loaded;
             lbFiles.SelectionChanged += LbFiles_SelectionChanged;
             MediaElement clipEl = new MediaElement();
+            _dialogService = dialogService;
         }
 
         private void LbFiles_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            _ea.GetEvent<ListboxWatchEvent>().Publish(lbFiles.SelectedItem.ToString());
+            try
+            {
+                Console.WriteLine("Index:" + lbFiles.SelectedIndex);
+                if (lbFiles.SelectedIndex != -1)
+                {
+                    _ea.GetEvent<ListboxWatchEvent>().Publish(lbFiles.SelectedItem.ToString());
+
+                }
+            }
+            catch (Exception ex)
+            {
+                var msg = "Something went wrong. Error: " + ex.Message;
+                ShowDialog(msg, true);
+            }
         }
 
         private void QuickResultsView_Loaded(object sender, RoutedEventArgs e)
@@ -54,7 +69,7 @@ namespace RecorderApp.Views
                 {
                     CancelEventArgs arg = new CancelEventArgs();
                     BackToMain(arg);
-                    mView.Show();
+                    mView.ShowDialog();
                 };
             }
         }
@@ -180,6 +195,22 @@ namespace RecorderApp.Views
         }
 
         #endregion
+
+        private void ShowDialog(string dialogMessage, bool error)
+        {
+            var p = new DialogParameters();
+            p.Add("message", dialogMessage);
+            p.Add("error", error);
+
+            _dialogService.ShowDialog("MessageDialog", p, result =>
+            {
+                if (result.Result == ButtonResult.OK)
+                {
+                    Console.WriteLine("Naclose mo ata");
+
+                }
+            });
+        }
     }
 
 

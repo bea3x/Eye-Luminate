@@ -70,8 +70,8 @@ def cleanIVT (data):
 
     for row in data:
         if row.classification == "saccade":
-            centroid_x = 0
-            centroid_y = 0
+            centroid_x = -1
+            centroid_y = -1
         else: 
             centroid_x = row.centroid_x
             centroid_y = row.centroid_y
@@ -357,9 +357,9 @@ def normalize(data):
         convData.append(GazeData(gx,gy,x.time,x.time_diff,x.distance,x.velocity,x.classification,cx, cy))
 
     return convData
-
-resWidth = 852
-resHeight = 480
+#480×360
+resWidth = 640
+resHeight = 360
 
 if __name__ == "__main__":
     filename = sys.argv[1]
@@ -376,7 +376,10 @@ if __name__ == "__main__":
 
 
     #strip filename of ext
-    newFn = filename.rstrip('_finalGazeData.csv')
+    if filename.find('_finalGazeData.csv') != -1:
+        newFn = filename.rstrip('_finalGazeData.csv')
+    else:
+        newFn = filename.rstrip('.csv')
 
     rawData = readFile(filename)
     
@@ -387,7 +390,7 @@ if __name__ == "__main__":
     normData = normalize(newData)
     write2File(newFn+'_fixations.csv', normData)
         
-    fixGroupData = groupFixation(newData)
+    fixGroupData = groupFixation(normData)
     writeFile(newFn+'_fixGrouped.csv', fixGroupData)
 
     sortedData = sortByDuration(fixGroupData)

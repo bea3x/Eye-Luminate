@@ -48,7 +48,7 @@ namespace RecorderApp.ViewModels
                 gaze_y = Convert.ToInt32(obj.gazeY);
                 time = Convert.ToInt32(obj.time);
 
-                if (gaze_x >= 0 && gaze_y >= 0 && time > 0)
+                if (gaze_x >= 0 && gaze_x <= 1920 && gaze_y >= 0 && gaze_y <= 1080 && time > 0)
                 {
                     GazeList.Add(new RawGaze(gaze_x, gaze_y, time));
                 }
@@ -78,7 +78,61 @@ namespace RecorderApp.ViewModels
             return GazeList;
         }
 
-        
+        /// <summary>
+        /// if gaze coordinate has not changed after 100ms, consider duplicates as invalid
+        /// </summary>
+        /// <param name="data"></param>
+        /// <returns></returns>
+        public List<RawGaze> removeSuspicious(List<RawGaze> data)
+        {
+            List<RawGaze> GazeList = new List<RawGaze>();
+            int start_time = 0;
+            int prev_gaze_x = -1;
+            int prev_gaze_y = -1;
+            
+            bool counter_set = false; //check if start counter set
+            int max_time = 100; //max time for same coordinates (ms)
+            foreach (RawGaze obj in data)
+            {
+                gaze_x = Convert.ToInt32(obj.gazeX);
+                gaze_y = Convert.ToInt32(obj.gazeY);
+                time = Convert.ToInt32(obj.time);
+
+                if (gaze_x == prev_gaze_x && gaze_y == prev_gaze_y)
+                {
+                    if (!counter_set)
+                    {
+                        start_time = time;
+                        counter_set = true;
+                    } 
+
+                    if (time-start_time > max_time)
+                    {
+
+                        GazeList.Add(new RawGaze(-1, -1, obj.time));
+                    }
+                    else
+                    {
+                        GazeList.Add(new RawGaze(obj.gazeX, obj.gazeY, obj.time));
+                    }
+
+                }
+                else
+                {
+
+                    GazeList.Add(new RawGaze(obj.gazeX, obj.gazeY, obj.time));
+                    counter_set = false;
+                }
+
+                prev_gaze_x = gaze_x;
+                prev_gaze_y = gaze_y;
+                // 1. if prev is the same as the current gaze x and y
+                // 2. if start_time is not set yet, set it and turn boolean value to true; else, kepp going
+                // 3. if time-start_time > 100 and gaze x and gazey is still the same, then turn gazex and gazey to -1
+            }
+
+            return GazeList;
+        }
 
 
     }

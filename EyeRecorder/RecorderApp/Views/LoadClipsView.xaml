@@ -1,0 +1,145 @@
+﻿<Window x:Class="RecorderApp.Views.LoadClipsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:fa="http://schemas.fontawesome.io/icons/"
+             xmlns:prism="http://prismlibrary.com/" xmlns:utilities="clr-namespace:RecorderApp.Utility"
+             prism:ViewModelLocator.AutoWireViewModel="True"
+          WindowStartupLocation="CenterScreen" ResizeMode="CanMinimize"
+        ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.CanContentScroll="True"
+        Title="Load Previous Clips"  Height="720" Width="980">
+    <Window.Resources>
+        <utilities:VisibilityConverter x:Key="VisibilityConverter"/>
+        <utilities:StringToURI x:Key="StringToURI"/>
+        <utilities:FilenameConverter x:Key="FilenameConverter" />
+    </Window.Resources>
+    <ScrollViewer>
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="37*"/>
+            <ColumnDefinition Width="483*"/>
+        </Grid.ColumnDefinitions>
+        <ContentControl prism:RegionManager.RegionName="ContentRegion" Grid.ColumnSpan="3" Margin="0,0,0,0.5" />
+        <Rectangle Width="15" Fill="#FFCEE3D7" HorizontalAlignment="Left" Margin="0,0,0,0.5"/>
+            <StackPanel Grid.ColumnSpan="2" Margin="0,0,0,0.5" Background="#2e3337">
+                <StackPanel.Resources>
+                    <Style TargetType="{x:Type Button}">
+                        <Setter Property="Margin" Value="0,10,0,0"/>
+                        <Setter Property="Width" Value="150"/>
+                        <Setter Property="Height" Value="30"/>
+                        <Setter Property="Background" Value="#E0E3EB"/>
+                        <Setter Property="BorderBrush" Value="#E0E3EB"/>
+                    </Style>
+                    <Style TargetType="{x:Type Label}">
+                        <Setter Property="Margin" Value="0,25,0,5"/>
+                        <Setter Property="Width" Value="400"/>
+                    </Style>
+                </StackPanel.Resources>
+
+                <Button Command="{Binding BackCommand}" Width="30" Height="30" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="30,30,0,0" Foreground="White" Background="#FF72C480">
+                <Button.Resources>
+                    <Style TargetType="Border">
+                        <Setter Property="CornerRadius" Value="50"/>
+                    </Style>
+                </Button.Resources>
+
+                <fa:ImageAwesome Icon="ArrowLeft" Height="22" Width="12" Foreground="AliceBlue" VerticalAlignment="Center"/>
+            </Button>
+
+                <Label FontFamily="Segoe UI Semibold" Foreground="White" Width="300">
+                    Processed Files History
+                </Label>
+                <ListBox x:Name="lbFileList" ItemsSource="{Binding VidFileList}" MinHeight="45" Width="300" Margin="0,10,0,0" Height="60"
+                            SelectedItem="{Binding SelectedCSVFile}" HorizontalAlignment="Center" VerticalAlignment="Center" Background="#FF222629" BorderBrush="#FF222629" Foreground="White">
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel>
+                            <TextBlock Text="{Binding Name, Converter={StaticResource FilenameConverter}}"/>
+                        </StackPanel>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+
+                <Button x:Name="btn_openFolder" Command="{Binding}" Foreground="White" Background="#FFB3B3B3" Width="180" FontSize="11">
+                    <Button.Resources>
+                        <Style TargetType="Border">
+                            <Setter Property="CornerRadius" Value="5"/>
+                        </Style>
+                    </Button.Resources> Open Results Folder
+                </Button>
+
+                <Button x:Name="btn_open" Command="{Binding LoadClipsCommand}" Foreground="White" Background="#FF72C480" Width="180" FontSize="11">
+                <Button.Resources>
+                    <Style TargetType="Border">
+                        <Setter Property="CornerRadius" Value="5"/>
+                    </Style>
+                </Button.Resources> Load Previously Generated Clips
+            </Button>
+
+                <fa:ImageAwesome Margin="0,20,10,0" Icon="CircleOutlineNotch" Spin="True" Height="24" Width="24" Foreground="AliceBlue" HorizontalAlignment="Center"
+                                 Visibility="{Binding IsProcessing, Converter={StaticResource VisibilityConverter}}"/>
+            <TextBlock x:Name="txtProgressOutput" Width="250" Foreground="White" FontFamily="Segoe UI Semibold" VerticalAlignment="Center" HorizontalAlignment="Center" 
+                           TextAlignment="Center" Margin="10,5,5,0">
+                    <Run Text="{Binding Output}" FontSize="10"/>
+            </TextBlock>
+
+            <!-- Preview all scenes (Merged clip) + Generate Heatmap button -->
+            <Label Visibility="{Binding AreClipsLoaded, Converter={StaticResource VisibilityConverter}}"
+                           FontFamily="Segoe UI Semibold" Foreground="White">
+                Preview All Scenes
+            </Label>
+            <MediaElement x:Name="PreviewClip" Width="426" Height="240" Source="{Binding MergedClip.filePath, Converter={StaticResource StringToURI}}" 
+                              Loaded="PreviewClip_Loaded" LoadedBehavior="Manual" ScrubbingEnabled="True" MediaEnded="PreviewClip_MediaEnded"
+                              MouseLeftButtonDown="PreviewClip_MouseLeftButtonDown" MouseEnter="PreviewClip_MouseEnter" MouseLeave="PreviewClip_MouseLeave" 
+                              Visibility="{Binding AreClipsLoaded, Converter={StaticResource VisibilityConverter}}"/>
+
+            <!-- rate each scene + selected scenes -->
+            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                <Label Visibility="{Binding AreClipsLoaded, Converter={StaticResource VisibilityConverter}}"
+                           FontFamily="Segoe UI Semibold" Foreground="White">
+                    Rate each scene
+                </Label>
+
+                <ItemsControl x:Name="lbClips" ItemsSource="{Binding ClipData}" Grid.IsSharedSizeScope="True">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <!--<StackPanel Orientation="Horizontal" MaxWidth="1600" CanHorizontallyScroll="True"/>-->
+                            <WrapPanel  />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Grid Margin="5">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" SharedSizeGroup="one" />
+                                    <RowDefinition Height="Auto" SharedSizeGroup="two" />
+                                </Grid.RowDefinitions>
+                                <MediaElement x:Name="clipEl" Width="200" Height="200" Source="{Binding filePath, Converter={StaticResource StringToURI}}" 
+                                              MouseEnter="clipEl_MouseEnter" MouseLeave="clipEl_MouseLeave" 
+                                              LoadedBehavior="Manual" Loaded="clipEl_Loaded" ScrubbingEnabled="True" 
+                                              MediaEnded="clipEl_MediaEnded" />
+                                <WrapPanel Margin="10,20,0,0">
+                                    <TextBlock Text="{Binding rank}" FontFamily="Segoe UI Semibold" Foreground="White" />
+                                    <TextBlock Text=": " Foreground="White" />
+                                    <TextBlock Text="{Binding timeStamp}" FontFamily="Segoe UI Semibold" Foreground="White" />
+                                </WrapPanel>
+                                
+                            </Grid>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                    <ItemsControl.Template>
+                        <ControlTemplate TargetType="{x:Type ItemsControl}">
+                            <ScrollViewer VerticalScrollBarVisibility="Auto" MinHeight="300" MaxWidth="1000" >
+                                <ItemsPresenter />
+                            </ScrollViewer>
+                        </ControlTemplate>
+                    </ItemsControl.Template>
+                </ItemsControl>
+            </StackPanel>
+
+        </StackPanel>
+
+
+
+        </Grid>
+    </ScrollViewer>
+</Window>

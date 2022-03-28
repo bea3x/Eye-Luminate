@@ -6,7 +6,7 @@
         xmlns:views="clr-namespace:RecorderApp.Views"
         xmlns:utilities="clr-namespace:RecorderApp.Utility"
         prism:ViewModelLocator.AutoWireViewModel="True"
-        Height="1080" Width="1920" WindowState="Maximized" WindowStyle="None">
+        Height="1080" Width="1920" MouseMove="Window_MouseMove" WindowStyle="None" WindowState="Maximized">
 
     <Window.Resources>
         <utilities:YesNoConverter x:Key="YesNoConverter" />

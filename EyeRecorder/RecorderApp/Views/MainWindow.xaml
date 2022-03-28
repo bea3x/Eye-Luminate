@@ -1,7 +1,7 @@
 ﻿<Window x:Class="RecorderApp.Views.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:prism="http://prismlibrary.com/" 
+        xmlns:prism="http://prismlibrary.com/" xmlns:fa="http://schemas.fontawesome.io/icons/"
         prism:ViewModelLocator.AutoWireViewModel="True"
         Title="{Binding Title}" Height="550" Width="655"
         WindowStartupLocation="CenterScreen" >
@@ -52,16 +52,30 @@
             <TextBlock x:Name="txtSelectedPath" Width="350">
                 <Run Text="{Binding SelectedPath}" FontStyle="Italic"/>
             </TextBlock>
-            <Button x:Name="openFile" Command="{Binding OpenCommand}" FontFamily="Segoe UI Semibold" RenderTransformOrigin="0.5,0.5" Background="#FFB3B3B3" 
-                    Foreground="White" Content="Select video" BorderBrush="#FFE0E3EB" UseLayoutRounding="False" FontWeight="Bold">
-                <Button.Resources>
-                    <Style TargetType="Border">
-                        <Setter Property="CornerRadius" Value="5"/>
-                    </Style>
-                </Button.Resources>
-            </Button>
+            <WrapPanel HorizontalAlignment="Center">
+                <Button x:Name="openFile" Command="{Binding OpenCommand}" FontFamily="Segoe UI Semibold" RenderTransformOrigin="0.5,0.5" Background="#FFB3B3B3" 
+                    Foreground="White" Content="Select video" BorderBrush="#FFE0E3EB" UseLayoutRounding="False" FontWeight="Bold" Width="120">
+                    <Button.Resources>
+                        <Style TargetType="Border">
+                            <Setter Property="CornerRadius" Value="5"/>
+                        </Style>
+                    </Button.Resources>
+                </Button>
 
-            <Button x:Name="btn_start" Command="{Binding NextWindow}" FontWeight="Bold" FontFamily="Segoe UI Semibold" Background="#FF72C480" Foreground="White" Content="Start playing" BorderBrush="#FFE0E3EB">
+                <Button Command="{Binding ConfigureCommand}" Width="25" Height="25" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="5,15,0,0" Foreground="White" Background="#FFB3B3B3">
+                    <Button.Resources>
+                        <Style TargetType="Border">
+                            <Setter Property="CornerRadius" Value="50"/>
+                        </Style>
+                    </Button.Resources>
+
+                    <fa:ImageAwesome Icon="Cog" Height="16" Width="12" Foreground="AliceBlue" VerticalAlignment="Center"/>
+                </Button>
+
+            </WrapPanel>
+
+            <Button x:Name="btn_start" Command="{Binding NextWindow}" FontWeight="Bold" FontFamily="Segoe UI Semibold" Background="#FF72C480" Foreground="White" 
+                    Content="Start playing" BorderBrush="#FFE0E3EB">
                 <Button.Resources>
                     <Style TargetType="Border">
                         <Setter Property="CornerRadius" Value="5"/>
@@ -91,6 +105,14 @@
 
             <Button Command="{Binding MultiUserResWindow}" FontFamily="Segoe UI Semibold" Background="#FF72C480" Foreground="White" BorderBrush="#FFE0E3EB" 
                     Content="Multi-user Data" FontWeight="Bold">
+                <Button.Resources>
+                    <Style TargetType="Border">
+                        <Setter Property="CornerRadius" Value="5"/>
+                    </Style>
+                </Button.Resources>
+            </Button>
+            <Button Command="{Binding LoadClipsWindow}" FontFamily="Segoe UI Semibold" Background="#FF72C480" Foreground="White" BorderBrush="#FFE0E3EB" 
+                    Content="History" FontWeight="Bold">
                 <Button.Resources>
                     <Style TargetType="Border">
                         <Setter Property="CornerRadius" Value="5"/>

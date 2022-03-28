@@ -6,11 +6,9 @@ using Prism.Mvvm;
 using Prism.Services.Dialogs;
 using RecorderApp.Models;
 using RecorderApp.Utility;
-using RecorderApp.Views;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
@@ -45,6 +43,10 @@ namespace RecorderApp.ViewModels
             _dialogService = dialogService;
 
             _ea.GetEvent<SavePathEvent>().Subscribe(GetVidPath);
+            _ea.GetEvent<RecStatusEvent>().Subscribe(GetTrackingStatus);
+            _ea.GetEvent<ListboxWatchEvent>().Subscribe(ChangeVidPath);
+            _ea.GetEvent<SaveFileName>().Subscribe(GetFN);
+
             //this.OpenCommand = new RelayCommand(this.OpenFile);
             this.OpenVidCommand = new RelayCommand(this.OpenVid);
 
@@ -74,10 +76,6 @@ namespace RecorderApp.ViewModels
 
             
             //InitLoad();
-
-            _ea.GetEvent<RecStatusEvent>().Subscribe(GetTrackingStatus);
-            _ea.GetEvent<ListboxWatchEvent>().Subscribe(ChangeVidPath);
-            _ea.GetEvent<SaveFileName>().Subscribe(GetFN);
             Console.WriteLine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location));
 
             inProcess(false);
@@ -310,6 +308,7 @@ namespace RecorderApp.ViewModels
 
                     Console.WriteLine(matched.First().FullName);
                     SelectedVid = matched.First().FullName;
+
                 }
             }
             catch
@@ -318,6 +317,7 @@ namespace RecorderApp.ViewModels
             }
 
         }
+
 
         /// <summary>
         /// Receives the saved path of selected video from experiment
@@ -341,6 +341,7 @@ namespace RecorderApp.ViewModels
             if (done)
             {
                 getLast();
+                _ea.GetEvent<RecStatusEvent>().Unsubscribe(GetTrackingStatus);
             }
             else
             {
@@ -371,14 +372,25 @@ namespace RecorderApp.ViewModels
 
         public void getLast()
         {
-            Files = dir.GetFiles("*.csv");
-            // sort by last write time
-            Array.Sort(Files, (f1, f2) => f1.LastWriteTime.CompareTo(f2.LastWriteTime));
-            // reverse array to sort by descending order
-            Array.Reverse(Files);
-            FileList.Clear();
-            FileList.Add(Files[0]);
-            Console.WriteLine(Files[0]);
+            try
+            {
+
+                Files = dir.GetFiles("*.csv");
+                foreach (FileInfo File in Files) {
+                    Console.WriteLine(File.Name);
+                }
+                // sort by last write time
+                Array.Sort(Files, (f1, f2) => f1.LastWriteTime.CompareTo(f2.LastWriteTime));
+                // reverse array to sort by descending order
+                Array.Reverse(Files);
+                FileList.Clear();
+                FileList.Add(Files[0]);
+                Console.WriteLine(Files[0]);
+            }
+            catch
+            {
+                Console.WriteLine("something wrong");
+            }
         }
 
         private ObservableCollection<Object> _fileList = new ObservableCollection<Object>();
@@ -438,31 +450,46 @@ namespace RecorderApp.ViewModels
 
         public void Load(string csvPath)
         {
-            List<VideoClip> dataList = readFile<VideoClip>(csvPath);
-            dataList = dataList.OrderBy(o => o.rank).ToList();
-            foreach (VideoClip obj in dataList)
+            try
             {
-                App.Current.Dispatcher.Invoke((Action)delegate // <--- HERE
+                List<VideoClip> dataList = readFile<VideoClip>(csvPath);
+                if (dataList.Count < 1)
+                    throw new Exception("No clips to be loaded...");
+                else
                 {
-                    // separate merged clip and add the rest to observable collection
-                    if (obj.rank == 0)
+
+                    dataList = dataList.OrderBy(o => o.rank).ToList();
+                    foreach (VideoClip obj in dataList)
                     {
-                        MergedClip = obj;
+                        App.Current.Dispatcher.Invoke((Action)delegate // <--- HERE
+                        {
+                            // separate merged clip and add the rest to observable collection
+                            if (obj.rank == 0)
+                            {
+                                MergedClip = obj;
+                            }
+                            else
+                            {
+                                //obj.timeStamp = GetTimestamp(obj.timeStart, obj.timeEnd);
+                                obj.timeStamp = obj.GetTimestamp();
+                                clipData.Add(obj);
+                                Console.WriteLine("ts: " + obj.timeStamp);
+                            }
+                        });
                     }
-                    else
-                    {
-                        //obj.timeStamp = GetTimestamp(obj.timeStart, obj.timeEnd);
-                        obj.timeStamp = obj.GetTimestamp();
-                        clipData.Add(obj);
-                        Console.WriteLine("ts: " + obj.timeStamp);
-                    }
-                });
+
+                    //announce loading of clips successfully
+                    //_ea.GetEvent<LoadedClipsEvent>().Publish(true);
+
+                    clipsDoneLoading(true);
+                }
+
             }
-
-            //announce loading of clips successfully
-            //_ea.GetEvent<LoadedClipsEvent>().Publish(true);
-
-            clipsDoneLoading(true);
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                ShowDialog(ex.Message, true);
+            }
         }
 
 
@@ -541,8 +568,14 @@ namespace RecorderApp.ViewModels
                 //selectedPath = Path.Combine(outputFileDirectory, "Clips");
                 //hmOutputPath = Path.Combine(outputFileDirectory, "Heatmaps");
                 changeOutputFileDir(fbd.SelectedPath);
+                outputChosen = true;
             }
+            else
+                outputChosen = false;
+
         }
+
+        public bool outputChosen;
 
         #endregion
 
@@ -606,8 +639,6 @@ namespace RecorderApp.ViewModels
                 Console.WriteLine(sfd.FileObj.Directory);
             }
         }
-
-        
 
         #endregion
 
@@ -675,15 +706,16 @@ namespace RecorderApp.ViewModels
             /// </summary>
             List<RawGaze> pass1 = new List<RawGaze>(); //remove blanks
             List<RawGaze> pass2 = new List<RawGaze>(); //remove time duplicates
-            //List<RawGaze> pass3 = new List<RawGaze>(); //remove excess time
+            List<RawGaze> pass3 = new List<RawGaze>(); //remove excess time
             List<RawGaze> validGazes = new List<RawGaze>(); //write file
 
             CleanDataViewModel cleanVm = new CleanDataViewModel();
 
             // functions defined in CleanDataViewModel
             pass1 = readFile<RawGaze>(SelectedFile);
-            pass2 = cleanVm.removeBlanks(pass1);
-            validGazes = cleanVm.removeDuplicates(pass2);
+            pass2 = cleanVm.removeSuspicious(pass1);
+            pass3 = cleanVm.removeBlanks(pass2);
+            validGazes = cleanVm.removeDuplicates(pass3);
 
             return validGazes;
         }
@@ -705,9 +737,9 @@ namespace RecorderApp.ViewModels
 
             finalGazeData = vm.runIVT(preIVT);
             finalGazeData = vm.fixationGroup(finalGazeData);
-            getClipDimensions(SelectedVid);
+            //getClipDimensions(SelectedVid).Await();
 
-            finalGazeData = vm.normalizeCoords(finalGazeData, 1920, 1080);
+            finalGazeData = vm.normalizeCoords(finalGazeData, Width, Height);
             return finalGazeData;
 
             //Console.WriteLine(finalGazeData.Count);
@@ -720,8 +752,9 @@ namespace RecorderApp.ViewModels
         public int Width { get; set; }
         public int Height { get; set; }
 
-        private async void getClipDimensions(string videoPath)
+        private async Task getClipDimensions(string videoPath)
         {
+
             var ffProbe = new FFProbe();
 
             //var videoInfo = ffProbe.GetMediaInfo(@"D:\tobii\thess\EyeGazeTracker\videos\Nike.mp4");
@@ -729,12 +762,11 @@ namespace RecorderApp.ViewModels
             //var rawXml = videoInfo.Result.CreateNavigator().OuterXml;
 
             //MediaInfo mediaInfo = new MediaInfo(videoInfo.Result);
-
+            //Task getWidth = Task.Run(()=>videoInfo.Streams.First().Width);
             Width = await Task.Run(() => videoInfo.Streams.FirstOrDefault().Width);
 
             Height = await Task.Run(() => videoInfo.Streams.FirstOrDefault().Height);
             Console.WriteLine("Width: " + Width + " Height: " + Height);
-
         }
 
         #endregion
@@ -769,21 +801,30 @@ namespace RecorderApp.ViewModels
 
         private async void SaveHeatmap()
         {
-            inProcess(true);
-            Output = "Generating clip with fixation map...";
-
-            string fn = SaveHeatmapDialog();
-            //string dPath = Path.GetDirectoryName(fn);
-            //Console.WriteLine("dest: " + dPath);
-            if (fn != null && SelectedVid != null)
+            try
             {
-                await saveHeatmap(fn);
-            }
-            inProcess(false);
 
-            // notification dialog => done task
-            var msg = "Generating clip with fixation map...Done";
-            ShowNDialog(msg, hmOutputPath);
+                inProcess(true);
+                Output = "Generating clip with fixation map...";
+
+                string fn = SaveHeatmapDialog();
+                //string dPath = Path.GetDirectoryName(fn);
+                //Console.WriteLine("dest: " + dPath);
+                if (fn != null && SelectedVid != null)
+                {
+                    await saveHeatmap(fn);
+                    inProcess(false);
+
+                    // notification dialog => done task
+                    var msg = "Generating clip with fixation map...Done";
+                    ShowNDialog(msg, hmOutputPath);
+                }
+            }
+            catch
+            {
+
+            }
+            
         }
         private string SaveHeatmapDialog()
         {
@@ -930,7 +971,7 @@ namespace RecorderApp.ViewModels
 
         public ICommand SelectScenesCommand { get; set; }
 
-        private async Task cleanDataAsync()
+        private async Task<bool> cleanDataAsync()
         {
             //clean data and write validGazeData csv
             List<RawGaze> validGazeData = new List<RawGaze>();
@@ -940,6 +981,11 @@ namespace RecorderApp.ViewModels
             string filename = Path.GetFileNameWithoutExtension(selectedCSV.FullName) + "_validGazeData.csv";
             Console.WriteLine("CleanDataAsync: " + filename);
             SelectedFile = writeFile(validGazeData, filename);
+
+            if (validGazeData.Count >= 1)
+                return true;
+
+            return false;
         }
 
         private async Task doIVTAsync()
@@ -1036,7 +1082,8 @@ namespace RecorderApp.ViewModels
             //SaveFile();
             _fbdTitle = "Select Folder to Save CSV Files";
             ChooseFolder();
-            SelectScenes();
+            if (outputChosen)
+                SelectScenes();
         }
 
         private async void SelectScenes()
@@ -1050,38 +1097,56 @@ namespace RecorderApp.ViewModels
                 runCount++;
 
                 inProcess(true);
+                await getClipDimensions(SelectedVid);
+                Console.WriteLine("Width: " + Width + " Height: " + Height);
                 Thread.Sleep(100);
                 SelectedFile = SelectedCSV.FullName;
                 Thread.Sleep(100);
-                await cleanDataAsync();
+                bool valid = await cleanDataAsync();
 
-                //perform IVT algo
-                Thread.Sleep(100);
-                await doIVTAsync();
-
-
-                Thread.Sleep(100);
-                //group fixations and extract scenes
-                await getScenes();
-
-                //Output = "Loaded Clips...";
-                //TODO: modify and make not brute-force
-                string filename = Path.GetFileNameWithoutExtension(selectedCSV.FullName) + "_selectedClipInfo.csv";
-                string infoDir = Path.Combine(outputFileDirectory, filename);
-                Console.WriteLine(infoDir);
-                if (File.Exists(infoDir))
+                if (valid)
                 {
-                    Console.WriteLine("file exists");
-                    Load(infoDir);
+
+                    //perform IVT algo
+                    Thread.Sleep(100);
+                    await doIVTAsync();
+
+
+                    Thread.Sleep(100);
+                    //group fixations and extract scenes
+                    await getScenes();
+
+                    //Output = "Loaded Clips...";
+                    //TODO: modify and make not brute-force
+                    string filename = Path.GetFileNameWithoutExtension(selectedCSV.FullName) + "_selectedClipInfo.csv";
+                    string infoDir = Path.Combine(outputFileDirectory, filename);
+                    Console.WriteLine(infoDir);
+                    if (File.Exists(infoDir))
+                    {
+                        Console.WriteLine("file exists");
+                        Load(infoDir);
+
+
+                        inProcess(false);
+
+                        var msg = "Done Loading Clips";
+                        //ShowDialog(msg, false);
+
+                        ShowNDialog("Scenes loaded and saved", selectedPath);
+                        Output = msg;
+                    }
+                    else
+                    {
+                        ShowDialog("Scenes failed to load", true);
+                    }
+
                 }
-
-                inProcess(false);
-
-                var msg = "Done Loading Clips";
-                //ShowDialog(msg, false);
-
-                ShowNDialog("Scenes loaded and saved", selectedPath);
-                Output = msg;
+                else
+                {
+                    ShowDialog("Something went wrong with the CSV file", true);
+                    inProcess(false);
+                    Output = "";
+                }
             }
             
         }
@@ -1097,11 +1162,13 @@ namespace RecorderApp.ViewModels
 
         void CloseWindow()
         {
+            dispose();
             Close?.Invoke();
         }
 
         void GoBack()
         {
+            dispose();
             Back?.Invoke();
         }
 
@@ -1111,6 +1178,14 @@ namespace RecorderApp.ViewModels
 
         public Action Next { get; set; }
         #endregion
+
+        private void dispose()
+        {
+            _ea.GetEvent<SavePathEvent>().Unsubscribe(GetVidPath);
+            _ea.GetEvent<RecStatusEvent>().Unsubscribe(GetTrackingStatus);
+            _ea.GetEvent<ListboxWatchEvent>().Unsubscribe(ChangeVidPath);
+            _ea.GetEvent<SaveFileName>().Unsubscribe(GetFN);
+        }
     }
     public static class TaskExtensions
     {

@@ -1,0 +1,24 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<configuration>
+    <configSections>
+        <sectionGroup name="userSettings" type="System.Configuration.UserSettingsGroup, System, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" >
+            <section name="RecorderApp.Properties.Settings" type="System.Configuration.ClientSettingsSection, System, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" allowExeDefinition="MachineToLocalUser" requirePermission="false" />
+        </sectionGroup>
+    </configSections>
+    <userSettings>
+        <RecorderApp.Properties.Settings>
+            <setting name="GazeApp_Path" serializeAs="String">
+                <value />
+            </setting>
+            <setting name="GazeApp_default" serializeAs="String">
+                <value>C:\Program Files (x86)\GazePointer\GazePointer\GazePointer.exe</value>
+            </setting>
+            <setting name="ShowCursor_set" serializeAs="String">
+                <value />
+            </setting>
+            <setting name="Python_Path" serializeAs="String">
+                <value />
+            </setting>
+        </RecorderApp.Properties.Settings>
+    </userSettings>
+</configuration>

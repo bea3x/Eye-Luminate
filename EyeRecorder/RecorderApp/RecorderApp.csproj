@@ -8,13 +8,29 @@
     <OutputType>WinExe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>RecorderApp</RootNamespace>
-    <AssemblyName>RecorderApp</AssemblyName>
+    <AssemblyName>Eye Luminate</AssemblyName>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <WarningLevel>4</WarningLevel>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
+    <IsWebBootstrapper>false</IsWebBootstrapper>
+    <PublishUrl>publish\</PublishUrl>
+    <Install>true</Install>
+    <InstallFrom>Disk</InstallFrom>
+    <UpdateEnabled>false</UpdateEnabled>
+    <UpdateMode>Foreground</UpdateMode>
+    <UpdateInterval>7</UpdateInterval>
+    <UpdateIntervalUnits>Days</UpdateIntervalUnits>
+    <UpdatePeriodically>false</UpdatePeriodically>
+    <UpdateRequired>false</UpdateRequired>
+    <MapFileExtensions>true</MapFileExtensions>
+    <ApplicationRevision>1</ApplicationRevision>
+    <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
+    <UseApplicationTrust>false</UseApplicationTrust>
+    <PublishWizardCompleted>true</PublishWizardCompleted>
+    <BootstrapperEnabled>true</BootstrapperEnabled>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -78,6 +94,27 @@
     <ErrorReport>prompt</ErrorReport>
     <Prefer32Bit>true</Prefer32Bit>
   </PropertyGroup>
+  <PropertyGroup>
+    <StartupObject>RecorderApp.App</StartupObject>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ManifestCertificateThumbprint>E19C391F4BD1C19CF15013B4FE7FA3BAACB133DE</ManifestCertificateThumbprint>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ManifestKeyFile>RecorderApp_TemporaryKey.pfx</ManifestKeyFile>
+  </PropertyGroup>
+  <PropertyGroup>
+    <GenerateManifests>true</GenerateManifests>
+  </PropertyGroup>
+  <PropertyGroup>
+    <TargetZone>LocalIntranet</TargetZone>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationManifest>Properties\app.manifest</ApplicationManifest>
+  </PropertyGroup>
+  <PropertyGroup>
+    <SignManifests>true</SignManifests>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="EyeXFramework">
       <HintPath>..\..\lib\x86\EyeXFramework.dll</HintPath>
@@ -110,6 +147,14 @@
       <DependentUpon>ChartView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Dialogs\ChartViewModel.cs" />
+    <Compile Include="Dialogs\ConfigureDialog.xaml.cs">
+      <DependentUpon>ConfigureDialog.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Dialogs\ConfigureDialogViewModel.cs" />
+    <Compile Include="Dialogs\HelpDialog.xaml.cs">
+      <DependentUpon>HelpDialog.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Dialogs\HelpDialogViewModel.cs" />
     <Compile Include="Dialogs\MessageDialog.xaml.cs">
       <DependentUpon>MessageDialog.xaml</DependentUpon>
     </Compile>
@@ -136,19 +181,29 @@
     <Compile Include="Utility\MediaWatchEvent.cs" />
     <Compile Include="Utility\RatingConverter.cs" />
     <Compile Include="Utility\RecStatusEvent.cs" />
+    <Compile Include="Utility\SaveAppPathEvent.cs" />
     <Compile Include="Utility\SaveFileName.cs" />
     <Compile Include="Utility\SavePathEvent.cs" />
+    <Compile Include="Utility\SavePythonPathEvent.cs" />
     <Compile Include="Utility\StringToURI.cs" />
     <Compile Include="Utility\TimeWatchEvent.cs" />
     <Compile Include="Utility\VisibilityConverter.cs" />
     <Compile Include="ViewModels\CleanDataViewModel.cs" />
     <Compile Include="ViewModels\DynamicGridViewModel.cs" />
     <Compile Include="ViewModels\IVTViewModel.cs" />
+    <Compile Include="ViewModels\LoadClipsViewModel.cs" />
     <Compile Include="ViewModels\MultiUserResViewModel.cs" />
+    <Compile Include="ViewModels\PointerTrackerViewModel.cs" />
     <Compile Include="ViewModels\QuickResultsViewModel.cs" />
     <Compile Include="ViewModels\ResultsViewModel.cs" />
+    <Compile Include="Views\LoadClipsView.xaml.cs">
+      <DependentUpon>LoadClipsView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\MultiUserResView.xaml.cs">
       <DependentUpon>MultiUserResView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\PointerTrackerView.xaml.cs">
+      <DependentUpon>PointerTrackerView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\QuickResultsView.xaml.cs">
       <DependentUpon>QuickResultsView.xaml</DependentUpon>
@@ -157,6 +212,14 @@
       <DependentUpon>ResultsView.xaml</DependentUpon>
     </Compile>
     <Page Include="Dialogs\ChartView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Dialogs\ConfigureDialog.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Dialogs\HelpDialog.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -173,6 +236,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\GazeTrackerView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\LoadClipsView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -203,6 +270,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Views\PointerTrackerView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Views\QuickResultsView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -230,10 +301,13 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
+    <None Include="app.config" />
+    <None Include="Properties\app.manifest" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
+    <None Include="RecorderApp_TemporaryKey.pfx" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="CsvHelper">
@@ -266,11 +340,23 @@
     <PackageReference Include="python">
       <Version>3.7.6</Version>
     </PackageReference>
+    <PackageReference Include="System.Linq">
+      <Version>4.3.0</Version>
+    </PackageReference>
+    <PackageReference Include="System.Linq.Queryable">
+      <Version>4.3.0</Version>
+    </PackageReference>
     <PackageReference Include="System.Runtime">
       <Version>4.3.1</Version>
     </PackageReference>
     <PackageReference Include="System.Runtime.Extensions">
       <Version>4.3.1</Version>
+    </PackageReference>
+    <PackageReference Include="System.Threading">
+      <Version>4.3.0</Version>
+    </PackageReference>
+    <PackageReference Include="System.Threading.Tasks">
+      <Version>4.3.0</Version>
     </PackageReference>
     <PackageReference Include="WindowsAPICodePack-Shell">
       <Version>1.1.1</Version>
@@ -293,10 +379,23 @@
     <Content Include="Scripts\extractScenes.py" />
     <Content Include="Scripts\getHeatmap.py" />
     <Content Include="Scripts\groupFixations.py" />
+    <Content Include="Scripts\groupHeatmap.py" />
     <Content Include="Tobii.EyeX.Client.dll" />
   </ItemGroup>
   <ItemGroup>
     <WCFMetadata Include="Connected Services\" />
+  </ItemGroup>
+  <ItemGroup>
+    <BootstrapperPackage Include=".NETFramework,Version=v4.7.2">
+      <Visible>False</Visible>
+      <ProductName>Microsoft .NET Framework 4.7.2 %28x86 and x64%29</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
