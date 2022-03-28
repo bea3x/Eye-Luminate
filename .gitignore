@@ -18,3 +18,4 @@ bin-release/
 # information for Eclipse / Flash Builder.
 
 Readme.txt
+./setup/GazePointer 2.9.2.msi
